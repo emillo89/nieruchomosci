@@ -1,6 +1,6 @@
+from datetime import datetime,date
 import requests
 from bs4 import BeautifulSoup
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -11,16 +11,28 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flats.db'
 db = SQLAlchemy(app)
 
+
 class Flats(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
-    '''add'''
-    # address = db.Column(db.String(100))
     price = db.Column(db.Integer, nullable=False)
     area = db.Column(db.Float, nullable=False)
-    room = db.Column(db.Integer, nullable=False)
-    '''new add'''
-    link = db.Column(db.String)
+    rooms = db.Column(db.Integer,nullable=True)
+    link = db.Column(db.String(256), nullable=True)
+    own = db.Column(db.String(100), nullable=True)
+    finishing = db.Column(db.String(100), nullable=True)
+    level = db.Column(db.String(10), nullable=True)
+    rent = db.Column(db.Integer, nullable=True)
+    parking = db.Column(db.String(100), nullable=True)
+    heating = db.Column(db.String(100), nullable=True)
+    market = db.Column(db.String(100), nullable=True)
+    advertisement = db.Column(db.String(100), nullable=True)
+    # years_of_building = db.Column(db.DateTime, nullable=True)
+    province = db.Column(db.String(100))
+    district = db.Column(db.String(100))
+    settlement = db.Column(db.String(100))
+    street = db.Column(db.String(100))
+    # date_add_to_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 
@@ -33,8 +45,8 @@ def parse_price(price):
 
 def page(number, i):
     URL = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie'
-    response = requests.get(f'{URL}/{i}?page={number}')
-    content = response.text
+    resonse = requests.get(f'{URL}/{i}?page={number}')
+    content = resonse.text
     soup = BeautifulSoup(content, 'html.parser')
     return soup
 
@@ -45,98 +57,115 @@ def parse_link(link):
     soup = BeautifulSoup(content,'html.parser')
     return soup
 
+
+def change_zapytaj(text):
+    if text == 'zapytaj':
+        text = None
+    return text
+
+
+def check_price(text):
+    if text == 'Zapytajocenę':
+        return True
+    return False
+
+
+def create_new_flat(city, price, area, rooms, link, own, finishing,level, rent, parking, heating, market,
+                    advertisement, province, district, settlement,street):
+    new_flat = Flats(
+        city=city,
+        price=price,
+        area=area,
+        rooms=rooms,
+        link=link,
+        own=own,
+        finishing=finishing,
+        level=level,
+        rent=rent,
+        parking=parking,
+        heating=heating,
+        market=market,
+        advertisement=advertisement,
+        # years_of_building=years_of_building,
+        province=province,
+        district=district,
+        settlement=settlement,
+        street=street,
+        # date_add_to_data=date_add_to_data
+    )
+    offers.append(new_flat)
+
+
 def parse_page(number:int, places:str) -> None:
     for place in places:
         print(f'Number {number}')
         soup = page(number, place)
         for offer in soup.find_all('li', class_='css-p74l73'):
+            link = offer.find('a', class_='css-rvjxyq')['href']
+
             try:
-                link = offer.find('a', class_='css-rvjxyq')['href']
-            except NameError:
-                link = None
-            else:
+                link = f'https://www.otodom.pl/{link}'
+                new = parse_link(link)
+
+                information = new.find_all('a', class_='css-1in5nid')
+                info = [info.getText() for info in information]
+                city = info[2]
+                province = info[1]
+                district = info[3]
+
                 try:
-                    link = f'https://www.otodom.pl/{link}'
-                    new = parse_link(link)
-                    information = new.find_all('a', class_='css-1in5nid')
-                    info = [info.getText() for info in information]
-                    # print(info)
-                    city = info[2]
-                    province = info[1]
-                    district = info[3]
-
-                    try:
-                        settlement = info[4]
-                    except IndexError:
-                        settlement = None
-
-                    try:
-                        street = info[5]
-                    except IndexError:
-                        street = None
-
-                    price = new.find('strong', class_='css-8qi9av').getText().replace(' ', '').split('zł')[0]
-                    info_2 = new.find_all('div', class_='css-1wi2w6s')
-                    details = [info.getText() for info in info_2]
-                    area = details[0].split(' ')[0]
-                    own = details[1]
-                    rooms = details[2]
-                    finishing = details[3]
-                    try:
-                        level = details[4]
-                    except IndexError:
-                        level = None
-                    else:
-                        level.split('/')
-                        print(level)
-                        if level[0] == 'parter':
-                            level[0] = 0
-                            level = f'{level[0]}/{level[1]}'
-
-                    try:
-                        rent = details[6].split(' ')[0]
-                    except IndexError:
-                        rent = None
-                    try:
-                        parking = details[7]
-                        print(parking)
-                    except KeyError:
-                        parking = None
-
-                    try:
-                        heating = details[9]
-                    except KeyError:
-                        heating = None
+                    settlement = info[4]
                 except IndexError:
+                    settlement = None
+
+                try:
+                    street = info[5]
+                except IndexError:
+                    street = None
+
+                price = new.find('strong', class_='css-8qi9av').getText().replace(' ', '').split('zł')[0]
+
+                if check_price(price) == True:
                     break
-            print(
-                f'city: {city} - price : {price} - area: {area} - rooms: {rooms}- {link} - finishing: {finishing} - level: {level} - rent:{rent} - parking: {parking} - heating:{heating} - own: {own}- province: {province} - district"{district} - settlement: {settlement} - street:{street}')
 
 
+                info_2 = new.find_all('div' , class_='css-1qzszy5')
+                details = [info.getText() for info in info_2]
+
+                area = change_zapytaj(details[1].split(' ')[0])
+                own = change_zapytaj(details[3])
+                rooms = change_zapytaj(details[5])
+                finishing = change_zapytaj(details[7])
+                level = change_zapytaj(details[9].split('/'))
+                if level[0] == 'parter':
+                    level[0] = 0
+                level = f'{level[0]}/{level[1]}'
+                rent = change_zapytaj(details[13].replace(' ','').split('zł')[0])
+                parking = change_zapytaj(details[15])
+                heating = change_zapytaj(details[19])
+                market = change_zapytaj(details[21])
+                advertisement = change_zapytaj(details[23])
+                years_of_building = change_zapytaj(details[25])
+                if years_of_building in ['blok', 'apartamentowiec']:
+                    years_of_building = None
+
+                date_add_to_data = date.today()
+
+            except IndexError:
+                break
+
+            else:
+                create_new_flat(city, price, area, rooms, link, own, finishing, level, rent, parking, heating, market,
+                                advertisement, province, district, settlement, street)
+
+                print(offers)
 
 
+            # print(f'city: {city} - price : {price} - area: {area} - rooms: {rooms}- link: {link} - finishing: {finishing} - level: {level} - rent:{rent} - parking: {parking} -market: {market} - advertisement:{advertisement} -years_of_building: {years_of_building}-  heating:{heating} - own: {own}- province: {province} - district{district} - settlement: {settlement} - street:{street}')
 
-
-            # link = ''
-            '''Do poprawy, nie dodajemy do bazy danych po wierszu, tylko dodac wszystkie wiersze i dopiero wtedy commit'''
-            new_flat = Flats(
-                city=city,
-                price=price,
-                area=area,
-                room=rooms,
-                link=link
-            )
-            # offers.append(new_flat)
-
-            db.session.add(new_flat)
-            db.session.commit()
-            print(f'{city} - {area} - {price} - {rooms}')
-
-# db.session.add(offers)
-# db.session.commit()
-
-for i in range(1,2):
+for i in range(10):
     parse_page(i, places)
+
 
 
 
