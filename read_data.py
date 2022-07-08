@@ -27,7 +27,17 @@ city_average_price_per_1m=city_average_price_per_1m.sort_values(by='price_per_1m
 df.insert(6, 'mean_area','Unkown')
 df.mean_area = ['<39' if i < 39 else '40-59' if i < 60 else '60-79' if i <80 else '>79' for i in df.area]
 area_range = df.groupby(['city', 'mean_area',],as_index=False).agg({'area': pd.Series.count}).sort_values(by=['area','city'], ascending=False)
-print(area_range)
+
+fig = px.pie(area_range, values=area_range.area, names=area_range.mean_area, hole=.5)
+fig.show()
+
+'''5 Count offert per primary and secondary market'''
+market_kind = df.groupby(['city', 'market'],as_index=False).agg({'area': pd.Series.count}).sort_values(by=['area','city'], ascending=False)
+
+fig = px.pie(market_kind, values=market_kind.area, names=market_kind.market, hole=.3)
+fig.update_traces(textinfo='percent + label')
+fig.show()
+
 
 app = Dash(__name__)
 
