@@ -3,6 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from webscrapping import parse_price,change_zapytaj,check_price,page,parse_link
+
+
 
 places = ['Warszawa','Krakow', 'Lodz', 'Wroclaw', 'Poznan', 'Gdansk', 'Szczecin', 'Bydgoszcz', 'Lublin', 'Bialystok']
 offers = []
@@ -40,38 +43,6 @@ class Flats(db.Model):
 db.create_all()
 
 
-def parse_price(price):
-    return price.replace(' ', '').replace('zł', '')
-
-
-def page(number, i):
-    URL = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie'
-    resonse = requests.get(f'{URL}/{i}?page={number}')
-    content = resonse.text
-    soup = BeautifulSoup(content, 'html.parser')
-    return soup
-
-
-def parse_link(link):
-    response = requests.get(link)
-    content = response.text
-    soup = BeautifulSoup(content,'html.parser')
-    return soup
-
-
-def change_zapytaj(text):
-    if text == 'zapytaj':
-        text = None
-    return text
-
-
-def check_price(text):
-    if text == 'Zapytajocenę':
-        return True
-    return False
-
-
-
 def create_new_flat(city, price, area, rooms, link, own, finishing, level, rent, parking, heating, market,
                     advertisement, years_of_building, province, district, settlement, street, date_add_to_date):
 
@@ -104,6 +75,7 @@ def parse_page(number:int, places:str) -> None:
         print(f'Number {number}')
         soup = page(number, place)
         for offer in soup.find_all('li', class_='css-p74l73'):
+            print(offer)
             link = offer.find('a', class_='css-rvjxyq')['href']
 
             try:
@@ -153,6 +125,8 @@ def parse_page(number:int, places:str) -> None:
                 # if years_of_building in ['blok', 'apartamentowiec','plastikowe', 'kamienica']:
                 #     years_of_building = None
 
+                # nr_offers = new.find('div', class_='css-jjerc6').getText()
+                # data_off_addition = new.find('div', class_='css-atkgr').getText()
                 date_add_to_date = date.today()
 
             except IndexError:
@@ -162,13 +136,13 @@ def parse_page(number:int, places:str) -> None:
                 create_new_flat(city, price, area, rooms, link, own, finishing, level, rent, parking, heating, market,
                                 advertisement, years_of_building,province, district, settlement, street, date_add_to_date)
 
-                print(f'{date_add_to_date} - {years_of_building}')
+                # print(f'{date_add_to_date} - {years_of_building} ')
 
 
-            # print(f'city: {city} - price : {price} - area: {area} - rooms: {rooms}- link: {link} - finishing: {finishing} - level: {level} - rent:{rent} - parking: {parking} -market: {market} - advertisement:{advertisement} -years_of_building: {years_of_building}-  heating:{heating} - own: {own}- province: {province} - district{district} - settlement: {settlement} - street:{street}')
+                print(f'city: {city} - price : {price} - area: {area} - rooms: {rooms}- link: {link} - finishing: {finishing} - level: {level} - rent:{rent} - parking: {parking} -market: {market} - advertisement:{advertisement} -years_of_building: {years_of_building}-  heating:{heating} - own: {own}- province: {province} - district{district} - settlement: {settlement} - street:{street}')
 
-# for i in range(1):
-#     parse_page(i, places)
+for i in range(1):
+    parse_page(i, places)
 #
 # db.session.add_all(offers)
 # db.session.commit()
