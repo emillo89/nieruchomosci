@@ -1,33 +1,40 @@
-import requests
+import time
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webscrapping_main_page import WebScrappingMainPage
+from decoration_function import check_price
 
 
-def parse_price(price):
-    return price.replace(' ', '').replace('zł', '')
+# def check_price(func):
+#     def wrapper(*args):
+#         price = func(*args)
+#         if price == 'Zapytajocenę':
+#             price = None
+#         return price
+#     return wrapper
 
 
-def change_zapytaj(text):
-    if text == 'zapytaj':
-        text = None
-    return text
+class WebScrapping(WebScrappingMainPage):
+
+    def get_links(self, url):
+        # super().get_page(url)
+        # option = webdriver.ChromeOptions()
+        # option.add_argument('headless')
+        service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
+        driver = webdriver.Chrome(service=service)
+        driver.get(url)
+        time.sleep(0.5)
+        soup = BeautifulSoup(driver.page_source, 'lxml')
+        return soup
 
 
-def check_price(text):
-    if text == 'Zapytajocenę':
-        return True
-    return False
+    @check_price
+    def get_price(self, soup):
+        price = soup.find('strong', class_='css-8qi9av').getText().replace(' ', '').split('zł')[0]
+        return price
 
 
-def page(number, i):
-    URL = 'https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie'
-    resonse = requests.get(f'{URL}/{i}?page={number}')
-    content = resonse.text
-    soup = BeautifulSoup(content, 'html.parser')
-    return soup
 
 
-def parse_link(link):
-    response = requests.get(link)
-    content = response.text
-    soup = BeautifulSoup(content,'html.parser')
-    return soup
+
