@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webscrapping_main_page import WebScrappingMainPage
-from decoration_function import check_price, check_location, take_details, take_all_details
+from decoration_function import check_price, check_location, take_details, take_all_details, show_offert, show_data
 
 
 class WebScrapping(WebScrappingMainPage):
@@ -47,14 +47,17 @@ class WebScrapping(WebScrappingMainPage):
             list.append(info)
         return list
 
+    @show_offert
     def get_nr_offert(self,soup):
         nr_offert = soup.find('div', class_='css-jjerc6')
         return nr_offert.text
 
+    @show_data
     def get_date_addition(self, soup):
         date_addition = soup.find('div', class_='css-atkgr')
         return date_addition.text
 
+    @show_data
     def get_date_actualisation(self, soup):
         date_actualisation = soup.find('div', class_='css-zojvsz')
         return date_actualisation.text
