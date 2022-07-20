@@ -1,12 +1,33 @@
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+
 from webscrapping_main_page import WebScrappingMainPage
 from decoration_function import check_price, check_location, take_details, take_all_details, show_offert, show_data
+from models_flat import *
 
 
 class WebScrapping(WebScrappingMainPage):
+    def __contact(self, driver):
+        time.sleep(2)
+        accept = driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+        accept.click()
+        time.sleep(2)
+        try:
+            show_nr = driver.find_element(By.CSS_SELECTOR, '.phoneNumber button')
+            time.sleep(2)
+            show_nr.click()
+        except NoSuchElementException:
+            contact_nr = None
+        else:
+            time.sleep(1)
+            contact_nr = driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
+
+        contact_person = driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
+        return contact_nr, contact_person
 
     def get_links(self, url):
         # super().get_page(url)
@@ -14,20 +35,53 @@ class WebScrapping(WebScrappingMainPage):
         # option.add_argument('headless')
         service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
         driver = webdriver.Chrome(service=service)
+        driver.maximize_window()
         driver.get(url)
-        time.sleep(0.5)
+        # contact_number, contact_person = self.__contact(driver)
+
+
         soup = BeautifulSoup(driver.page_source, 'lxml')
+        time.sleep(1)
+
         return soup
+
 
     @check_price
     def get_price(self, soup):
-        price = soup.find('strong', class_='css-8qi9av').getText().replace(' ', '').split('zł')[0]
+        price = soup.find('strong', class_='css-8qi9av')
         return price
+    @staticmethod
+    def get_loc(soup_el):
+        locations = [locate.getText() for locate in soup_el]
+        try:
+            kind_of_investment = locations[0].split(' ')[0]
+        except IndexError:
+            kind_of_investment = None
 
-    @check_location
+        try:
+            city = locations[2]
+        except IndexError:
+            city = None
+        try:
+            province = locations[1]
+        except IndexError:
+            province = None
+        try:
+            district = locations[3]
+        except IndexError:
+            district = None
+        try:
+            street = locations[-1]
+        except IndexError:
+            street = None
+        else:
+            if not street.startswith('ul.'):
+                street = None
+        return kind_of_investment, city, province, district, street
+
     def get_locations(self, soup):
         locations = soup.find_all('a', class_='css-1in5nid')
-        return locations
+        return self.get_info_about_localisation(locations)
 
     @take_all_details
     def __get_details(self, soup):
@@ -53,7 +107,7 @@ class WebScrapping(WebScrappingMainPage):
         return nr_offert.text
 
     @show_data
-    def get_date_addition(self, soup):
+    def get_date_addition(self, soup: BeautifulSoup) -> str:
         date_addition = soup.find('div', class_='css-atkgr')
         return date_addition.text
 
@@ -61,6 +115,47 @@ class WebScrapping(WebScrappingMainPage):
     def get_date_actualisation(self, soup):
         date_actualisation = soup.find('div', class_='css-zojvsz')
         return date_actualisation.text
+
+    def create_new_flat(self, price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
+                        market, advertiser_add, state_of_the_building_finish, city, province, district, street,
+                        date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
+                        building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
+                        equipment, nr_offert, link)->Flats:
+        new_flat = Flats(
+            price=price,
+            area=area,
+            rooms=rooms,
+            own=own,
+            year_of_building=year_of_building,
+            available=available,
+            rent=rent,
+            floor=floor,
+            heating=heating,
+            car_park=car_park,
+            market=market,
+            advertiser_add=advertiser_add,
+            state_of_the_building_finish=state_of_the_building_finish,
+            city=city,
+            province=province,
+            district=district,
+            street=street,
+            date_addition_add=date_addition_add,
+            date_actualisation_add=date_actualisation_add,
+            type_of_building=type_of_building,
+            kind_of_investment=kind_of_investment,
+            building_material=building_material,
+            suplementary=suplementary,
+            remote_service=remote_service,
+            security=security,
+            media=media,
+            balcony=balcony,
+            windows=windows,
+            elevator=elevator,
+            equipment=equipment,
+            nr_offert=nr_offert,
+            link=link
+        )
+        return new_flat
 
 
 

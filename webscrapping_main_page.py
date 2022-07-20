@@ -31,3 +31,16 @@ class WebScrappingMainPage:
                 link = f"https://www.otodom.pl{link['href']}"
                 if link not in self.all_links:
                     self.all_links.append(link)
+
+
+
+
+class WebScrapper:
+    def __init__(self):
+        service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
+        self.driver = webdriver.Chrome(service=service)
+
+    def get_soup(self, url:str) -> BeautifulSoup:
+        self.driver.get(url)
+        time.sleep(0.5)
+        return

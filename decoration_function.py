@@ -12,6 +12,10 @@ UNIT = 60
 def check_price(func):
     def wrapper(*args):
         price = func(*args)
+        try:
+            price = price.getText().replace(' ', '').split('zł')[0]
+        except AttributeError:
+            price = None
         if price == 'Zapytajocenę':
             price = None
         return price
@@ -61,20 +65,27 @@ def take_all_details(func):
             except AttributeError:
                 details[key] = None
             else:
-                if details[key].endswith('m²'):
-                    details[key] = details[key].split(' ')[0].replace(',','.')
-                if details[key].endswith('zł'):
-                    details[key] = details[key].replace(' ','').split('zł')[0]
-                if details[key] == 'zapytaj':
+                # print(f"{details['Piętro']}")
+                try:
+                    if details[key].endswith('m²'):
+                        details[key] = details[key].split(' ')[0].replace(',','.')
+                    if details[key].endswith('zł'):
+                        details[key] = details[key].replace(' ','').split('zł')[0]
+                    if details[key] == 'zapytaj':
+                        details[key] = None
+                except AttributeError:
                     details[key] = None
-                if details['Piętro'] == None:
+                try:
+                    if details['Piętro'].split('/')[0] == 'parter':
+                        cut = details['Piętro'].split('/')
+                        details['Piętro'] = f'1/{cut[1]}'
+                        # print("Udało się")
+                    elif details['Piętro'] == 'parter':
+                        details['Piętro'] = f'1'
+                except IndexError:
                     details['Piętro'] = None
-                elif details['Piętro'].split('/')[0] == 'parter':
-                    cut = details['Piętro'].split('/')
-                    details['Piętro'] = f'1/{cut[1]}'
-                    print("Udało się")
-                else:
-                    details['Piętro'] == None
+                except AttributeError:
+                    details['Piętro'] = None
                 # if details[key].endswith('Film'):
                 #     details[key] = None
         return details
@@ -84,7 +95,10 @@ def take_all_details(func):
 def show_offert(func):
     def wrapper(*args):
         nr = func(*args)
-        offert_nr = nr.split(' ')[-1]
+        try:
+            offert_nr = nr.split(' ')[-1]
+        except AttributeError:
+            offert_nr = None
         return offert_nr
     return wrapper
 
@@ -117,7 +131,8 @@ def show_data(func):
                     time_delta = now - relativedelta(months=int(time_ago))
                 if time_unit == 'rok' or time_unit == 'lata' or time_unit == 'lat':
                     time_delta = now - relativedelta(years=int(time_ago))
-                return time_delta.strftime('%Y-%m-%d')
+
+                return time_delta
             except UnboundLocalError:
                 return
             except ValueError:
