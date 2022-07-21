@@ -1,166 +1,40 @@
-from datetime import datetime
-
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from webscrapping import WebScrapping
-from webscrapping_main_page import WebScrappingMainPage
-# from models_flat import Flats
-
+import time
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.common import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 
 
-offers = []
+url = 'https://www.otodom.pl/pl/oferta/unikatowe-mieszkanie-z-widokiem-na-centrum-ID4hom3'
+service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
+driver = webdriver.Chrome(service=service)
+driver.get(url)
+time.sleep(0.5)
+soup = BeautifulSoup(driver.page_source, 'lxml')
+
+info = soup.find_all('a', class_='css-1in5nid')
+locations = [locate.getText() for locate in info]
+kind_of_investment = locations[0].split(' ')[0]
+city = locations[2]
+province = locations[1]
+district = locations[3]
+street = locations[-1]
+print(f'{city} - {province} - {street}')
+rooms = soup.find_all('div',class_='css-1qzszy5')
+details = [cos.getText() for cos in rooms]
+long = len(details)
+new_dict = {}
+for index in range(0,long,2):
+    new_dict[details[index]] = details[index+1]
+print(new_dict)
 
 
-    class Flats(db.Model):
-        __tablename__ = 'property'
-        id = db.Column(db.Integer, primary_key=True)
-        price = db.Column(db.Float, nullable=True)
-        rooms = db.Column(db.Integer, nullable=True)
-        area = db.Column(db.Float, nullable=True)
-        own = db.Column(db.String(100), nullable=True)
-        year_of_building = db.Column(db.String(256), nullable=True)
-        available = db.Column(db.String, nullable=True)
-        rent = db.Column(db.Integer, nullable=True)
-        floor = db.Column(db.String(10), nullable=True)
-        heating = db.Column(db.String(100), nullable=True)
-        car_park = db.Column(db.String(100), nullable=True)
-        market = db.Column(db.String(100), nullable=True)
-        advertiser_add = db.Column(db.String(100), nullable=True)
-        state_of_the_building_finish = db.Column(db.String(100), nullable=True)
-        city = db.Column(db.String(100), nullable=True)
-        province = db.Column(db.String(100), nullable=True)
-        district = db.Column(db.String(100), nullable=True)
-        street = db.Column(db.String(100), nullable=True)
-        date_addition_add = db.Column(db.DateTime, nullable=True)
-        date_actualisation_add = db.Column(db.DateTime, nullable=True)
-        date_add_to_database = db.Column(db.DateTime, default=datetime.utcnow)
-        type_of_building = db.Column(db.String(100), nullable=True)
-        kind_of_investment = db.Column(db.String(256), nullable=True)
-        building_material = db.Column(db.String(100), nullable=True)
-        suplementary = db.Column(db.String(100), nullable=True)
-        remote_service = db.Column(db.String(100), nullable=True)
-        security = db.Column(db.String(100), nullable=True)
-        media = db.Column(db.String(100), nullable=True)
-        balcony = db.Column(db.String(100), nullable=True)
-        windows = db.Column(db.String(100), nullable=True)
-        elevator = db.Column(db.String(100), nullable=True)
-        equipment = db.Column(db.String(100), nullable=True)
-        nr_offert = db.Column(db.String(256), nullable=True)
-        link = db.Column(db.String(256), nullable=True)
-
-
-    db.create_all()
-
-    def parse_main_page(page: int) -> list:
-        URL = f'''https://www.otodom.pl/pl/oferty/sprzedaz/mieszkanie/wiele-lokalizacji?distanceRadius=0&page={page}&limit=36&market=ALL&locations=%5Bcities_6-1%2Ccities_6-40%2Ccities_6-213%2Ccities_6-184%2Ccities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-1004%2Ccities_6-38%2Ccities_6-39%5D&viewType=listing'''
-
-        print(URL)
-        web_page = WebScrappingMainPage()
-        soup = web_page.get_page(URL)
-        pages = web_page.get_how_many_pages(soup)
-
-        for page in range(1):
-            soup = web_page.get_page(URL)
-            links = web_page.get_links_with_main_page(soup)
-        all_links = web_page.all_links
-        print(len(web_page.all_links))
-        return all_links
-
-    def create_new_flat(price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
-                        market, advertiser_add, state_of_the_building_finish, city, province, district, street,
-                        date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
-                        building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                        equipment, nr_offert, link):
-        new_flat = Flats(
-            price=price,
-            area=area,
-            rooms=rooms,
-            own=own,
-            year_of_building=year_of_building,
-            available=available,
-            rent=rent,
-            floor=floor,
-            heating=heating,
-            car_park=car_park,
-            market=market,
-            advertiser_add=advertiser_add,
-            state_of_the_building_finish=state_of_the_building_finish,
-            city=city,
-            province=province,
-            district=district,
-            street=street,
-            date_addition_add=date_addition_add,
-            date_actualisation_add=date_actualisation_add,
-            type_of_building=type_of_building,
-            kind_of_investment=kind_of_investment,
-            building_material=building_material,
-            suplementary=suplementary,
-            remote_service=remote_service,
-            security=security,
-            media=media,
-            balcony=balcony,
-            windows=windows,
-            elevator=elevator,
-            equipment=equipment,
-            nr_offert=nr_offert,
-            link=link
-        )
-
-
-    def parse_page(page: int):
-        all_links = parse_main_page(page)
-        for url in all_links:
-            try:
-                site = WebScrapping()
-                soup = site.get_links(url)
-                price = site.get_price(soup)
-                if price == None:
-                    break
-                kind_of_investment, city, province, district, street = site.get_locations(soup)
-                balcony, rent, available, own, suplementary, rooms, building_material, media, car_park, remote_service,\
-                    heating, windows, floor, area, type_of_building, year_of_building, market, state_of_the_building_finish,\
-                    advertiser_add, elevator, equipment, security= site.show_details(soup)
-                nr_offert = site.get_nr_offert(soup)
-                date_addition_add = site.get_date_addition(soup)
-                date_actualisation_add = site.get_date_actualisation(soup)
-                print(f'''{price} - {area} - {rooms} - {own} - {year_of_building} - {available} - {rent} - {floor},= - {heating} - {car_park},
-                {market} - {advertiser_add} - {state_of_the_building_finish} - {city} - {province} - {district} - {street} -
-                {date_addition_add}, {date_actualisation_add}, {type_of_building}, {kind_of_investment},
-                {building_material} - {suplementary} - {remote_service} - {security} - {media} - {balcony} - {windows} - {
-                    elevator} -
-                {equipment} - {nr_offert} - {url}''' )
-                # flat = site.create_new_flat(price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
-                #             market, advertiser_add, state_of_the_building_finish, city, province, district, street,
-                #             date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
-                #             building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                #             equipment, nr_offert, url)
-
-                flat = create_new_flat(price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
-                            market, advertiser_add, state_of_the_building_finish, city, province, district, street,
-                            date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
-                            building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                            equipment, nr_offert, url)
-
-                db.session.add(flat)
-                db.session.commit()
-            except AttributeError:
-                continue
+area_name = soup.find_all('div', class_='css-1h52dri')
+a = [area.getText() for area in area_name]
+print(f'yyy = {a}')
 
 
 
 
-
-
-    parse_page(1)
-    # db.session.add_all(offers)
-    # db.session.commit()
-
-
-
-
-
-
-
-
-
-
+print(details)

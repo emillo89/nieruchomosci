@@ -122,21 +122,25 @@ def show_data(func):
             try:
                 if time_unit == 'sekundę' or time_unit == 'sekundy' or time_unit == 'sekund':
                     time_delta = now - timedelta(seconds=int(time_ago))
-                if time_unit == 'minutę' or time_unit=='minuty' or time_unit =='minut':
+                elif time_unit == 'minutę' or time_unit=='minuty' or time_unit =='minut':
                     time_delta = now - timedelta(minutes=int(time_ago))
-                if time_unit == 'dzień' or time_unit == 'dni':
+                elif time_unit == 'dzień' or time_unit == 'dni':
                     time_delta = now - timedelta(days=int(time_ago))
-                if time_unit == 'miesiąc' or time_unit == 'miesięcy':
+                elif time_unit == 'miesiąc' or time_unit == 'miesięcy':
                     print(f'{time_unit} - {time_ago}')
                     time_delta = now - relativedelta(months=int(time_ago))
-                if time_unit == 'rok' or time_unit == 'lata' or time_unit == 'lat':
+                elif time_unit == 'rok' or time_unit == 'lata' or time_unit == 'lat':
                     time_delta = now - relativedelta(years=int(time_ago))
-
-                return time_delta
             except UnboundLocalError:
                 return
             except ValueError:
                 return
+            except AttributeError:
+                return
+            except TypeError:
+                return
+            else:
+                return time_delta.date()
 
         else:
             return f'{time_ago} - {time_unit}'

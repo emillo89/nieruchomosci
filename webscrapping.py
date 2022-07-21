@@ -50,6 +50,7 @@ class WebScrapping(WebScrappingMainPage):
     def get_price(self, soup):
         price = soup.find('strong', class_='css-8qi9av')
         return price
+
     @staticmethod
     def get_loc(soup_el):
         locations = [locate.getText() for locate in soup_el]
@@ -81,7 +82,7 @@ class WebScrapping(WebScrappingMainPage):
 
     def get_locations(self, soup):
         locations = soup.find_all('a', class_='css-1in5nid')
-        return self.get_info_about_localisation(locations)
+        return self.get_loc(locations)
 
     @take_all_details
     def __get_details(self, soup):
