@@ -1,7 +1,7 @@
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
@@ -11,39 +11,33 @@ from models_flat import *
 
 
 class WebScrapping(WebScrappingMainPage):
-    def __contact(self, driver):
-        time.sleep(2)
-        accept = driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+    def __init__(self):
+        super().__init__()
+
+    def __contact(self):
+        accept = self.driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
         accept.click()
-        time.sleep(2)
         try:
-            show_nr = driver.find_element(By.CSS_SELECTOR, '.phoneNumber button')
-            time.sleep(2)
+            show_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber button')
             show_nr.click()
         except NoSuchElementException:
             contact_nr = None
-        else:
-            time.sleep(1)
-            contact_nr = driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
+        except ElementClickInterceptedException:
+            contact_nr = None
+        except TypeError:
+            contact_nr = None
 
-        contact_person = driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
+        else:
+            contact_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
+
+        contact_person = self.driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
         return contact_nr, contact_person
 
     def get_links(self, url):
-        # super().get_page(url)
-        # option = webdriver.ChromeOptions()
-        # option.add_argument('headless')
-        service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
-        driver = webdriver.Chrome(service=service)
-        driver.maximize_window()
-        driver.get(url)
-        # contact_number, contact_person = self.__contact(driver)
-
-
-        soup = BeautifulSoup(driver.page_source, 'lxml')
-        time.sleep(1)
-
-        return soup
+        self.driver.get(url)
+        contact_number, contact_person = self.__contact()
+        soup = BeautifulSoup(self.driver.page_source, 'lxml')
+        return soup, contact_number, contact_person
 
 
     @check_price
@@ -189,10 +183,15 @@ class WebScrapping(WebScrappingMainPage):
 # details = [cos.getText() for cos in rooms]
 # long = len(details)
 # new_dict = {}
-# for index in range(0,long,2):
-#     new_dict[details[index]] = details[index+1]
-# print(new_dict)
+# # for index in range(0,long,2):
+# #     new_dict[details[index]] = details[index+1]
+# # print(new_dict)
 #
 #
-# print(details)
-
+# # print(details)
+# try:
+#     accept = soup.find('button', '#onetrust-accept-btn-handler')
+# except NoSuchElementException:
+#     accept = None
+# else:
+#     accept.click()

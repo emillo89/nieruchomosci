@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+import datetime
 
 DETAILS = ['Powierzchnia','Forma własności','Liczba pokoi', 'Stan wykończenia','Piętro', 'Balkon / ogród / taras',
            'Czynsz','Miejsce parkingowe','Obsługa zdalna','Ogrzewanie','Rynek', 'Typ ogłoszeniodawcy','Dostępne od',
@@ -105,46 +106,33 @@ def show_offert(func):
 
 def show_data(func):
     def wrapper(*args):
-        unit = ['sekunda', 'sekundy', 'sekund', 'minutę', 'minuty', 'minut', 'dzień', 'dni', 'miesiąc',
+        unit = ['sekunda', 'sekundy', 'sekund', 'minutę', 'minuty', 'minut','minuta','godzina', 'godzin', 'godziny', 'dzień', 'dni', 'miesiąc',
                 'miesiące', 'miesięcy', 'rok', 'lata' ]
-        now = datetime.now()
+        now = datetime.date.today()
+
         try:
             data_info = func(*args).split(' ')
-        except UnboundLocalError:
-            time_ago = 0
-            time_unit = 'sekunda'
-        else:
-            time_ago = data_info[-3]
+            time_ago = int(data_info[-3])
             time_unit = data_info[-2]
-        if time_ago == '' or time_ago=='aktualizacji' or time_ago=='dodania':
-            time_ago = 1
-        if time_unit in unit:
-            try:
-                if time_unit == 'sekundę' or time_unit == 'sekundy' or time_unit == 'sekund':
-                    time_delta = now - timedelta(seconds=int(time_ago))
-                elif time_unit == 'minutę' or time_unit=='minuty' or time_unit =='minut':
-                    time_delta = now - timedelta(minutes=int(time_ago))
-                elif time_unit == 'dzień' or time_unit == 'dni':
-                    time_delta = now - timedelta(days=int(time_ago))
-                elif time_unit == 'miesiąc' or time_unit == 'miesięcy':
-                    print(f'{time_unit} - {time_ago}')
-                    time_delta = now - relativedelta(months=int(time_ago))
-                elif time_unit == 'rok' or time_unit == 'lata' or time_unit == 'lat':
-                    time_delta = now - relativedelta(years=int(time_ago))
-            except UnboundLocalError:
-                return
-            except ValueError:
-                return
-            except AttributeError:
-                return
-            except TypeError:
-                return
-            else:
-                return time_delta.date()
-
+        except TypeError and ValueError:
+            return
         else:
-            return f'{time_ago} - {time_unit}'
-
+            if time_ago == None or time_unit == None:
+                return
+            if time_unit == 'sekunda' or time_unit == 'sekundę' or time_unit == 'sekund' or time_unit == 'sekundy':
+                return now - timedelta(seconds=int(time_ago))
+            elif time_unit == 'minut' or time_unit == 'minuty' or time_unit == 'minutę':
+                return now - timedelta(minutes=int(time_ago))
+            elif time_unit == 'godzinę' or time_unit == 'godzin' or time_unit == 'godziny':
+                return now - timedelta(hours=int(time_ago))
+            elif time_unit == 'dni' or time_unit == 'dzień':
+                return now - timedelta(days=int(time_ago))
+            elif time_unit == 'miesiąc' or time_unit == 'miesiące' or time_unit == 'miesięcy':
+                return now - relativedelta(months=int(time_ago))
+            elif time_unit == 'rok' or time_unit == 'lata' or time_unit == 'lat':
+                return now - relativedelta(years=int(time_ago))
+            else:
+                return
     return wrapper
 
 
