@@ -1,22 +1,4 @@
-import time
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-
-
-class WebScrapper:
-    def __init__(self):
-        # option = webdriver.ChromeOptions()
-        # option.add_argument('headless')
-        service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
-        self.driver = webdriver.Chrome(service=service)
-        self.driver.implicitly_wait(3)
-        self.driver.maximize_window()
-
-    def get_page(self, url: str) -> BeautifulSoup:
-        self.driver.get(url)
-        soup = BeautifulSoup(self.driver.page_source, 'lxml')
-        return soup
+from webscrapper import WebScrapper
 
 
 class WebScrappingMainPage(WebScrapper):
@@ -25,7 +7,8 @@ class WebScrappingMainPage(WebScrapper):
         super().__init__()
         self.all_links = []
 
-    def get_how_many_pages(self, soup):
+    @staticmethod
+    def get_how_many_pages(soup):
         page_buttons = soup.select('.css-12q40o1 nav button')
         pages = int([button.text for button in page_buttons if button.text != ''][-1])
         return pages

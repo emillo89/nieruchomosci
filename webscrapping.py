@@ -1,13 +1,17 @@
-import time
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.common import NoSuchElementException, ElementClickInterceptedException
-from selenium.webdriver.chrome.service import Service
+from selenium.common import NoSuchElementException, ElementClickInterceptedException, InvalidArgumentException
 from selenium.webdriver.common.by import By
-
 from webscrapping_main_page import WebScrappingMainPage
-from decoration_function import check_price, check_location, take_details, take_all_details, show_offert, show_data
 from models_flat import *
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+from datetime import datetime
+
+DETAILS = ['Powierzchnia','Forma własności','Liczba pokoi', 'Stan wykończenia','Piętro', 'Balkon / ogród / taras',
+           'Czynsz','Miejsce parkingowe','Obsługa zdalna','Ogrzewanie','Rynek', 'Typ ogłoszeniodawcy','Dostępne od',
+           'Rok budowy','Rodzaj zabudowy','Okna','Winda','Media','Zabezpieczenia','Wyposażenie','Informacje dodatkowe',
+           'Materiał budynku']
 
 
 class WebScrapping(WebScrappingMainPage):
@@ -26,10 +30,8 @@ class WebScrapping(WebScrappingMainPage):
             contact_nr = None
         except TypeError:
             contact_nr = None
-
         else:
             contact_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
-
         contact_person = self.driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
         return contact_nr, contact_person
 
@@ -39,11 +41,19 @@ class WebScrapping(WebScrappingMainPage):
         soup = BeautifulSoup(self.driver.page_source, 'lxml')
         return soup, contact_number, contact_person
 
+    @staticmethod
+    def check_price(price):
+            try:
+                price = price.getText().replace(' ', '').split('zł')[0].replace(',','.')
+            except AttributeError:
+                price = None
+            if price == 'Zapytajocenę':
+                price = None
+            return price
 
-    @check_price
     def get_price(self, soup):
         price = soup.find('strong', class_='css-8qi9av')
-        return price
+        return self.check_price(price)
 
     @staticmethod
     def get_loc(soup_el):
@@ -78,7 +88,41 @@ class WebScrapping(WebScrappingMainPage):
         locations = soup.find_all('a', class_='css-1in5nid')
         return self.get_loc(locations)
 
-    @take_all_details
+    @staticmethod
+    def take_all_details(dict):
+            for key in DETAILS:
+                try:
+                    dict[key]
+                except KeyError:
+                    dict[key] = None
+                except AttributeError:
+                    dict[key] = None
+                else:
+                    # print(f"{details['Piętro']}")
+                    try:
+                        if dict[key].endswith('m²'):
+                            dict[key] = dict[key].split(' ')[0].replace(',', '.')
+                        if dict[key].endswith('zł'):
+                            dict[key] = dict[key].replace(' ', '').split('zł')[0]
+                        if dict[key] == 'zapytaj':
+                            dict[key] = None
+                    except AttributeError:
+                        dict[key] = None
+                    try:
+                        if dict['Piętro'].split('/')[0] == 'parter':
+                            cut = dict['Piętro'].split('/')
+                            dict['Piętro'] = f'1/{cut[1]}'
+                            # print("Udało się")
+                        elif dict['Piętro'] == 'parter':
+                            dict['Piętro'] = f'1'
+                    except IndexError:
+                        dict['Piętro'] = None
+                    except AttributeError:
+                        dict['Piętro'] = None
+                    # if details[key].endswith('Film'):
+                    #     details[key] = None
+            return dict
+
     def __get_details(self, soup):
         search = soup.find_all('div',class_='css-1qzszy5')
         details = [info.getText() for info in search]
@@ -86,7 +130,7 @@ class WebScrapping(WebScrappingMainPage):
         long = len(details)
         for index in range(0, long, 2):
             details_dict[details[index]] = details[index + 1]
-        return details_dict
+        return self.take_all_details(details_dict)
 
     def show_details(self, soup):
         details = dict(sorted(self.__get_details(soup).items()))
@@ -96,26 +140,61 @@ class WebScrapping(WebScrappingMainPage):
             list.append(info)
         return list
 
-    @show_offert
-    def get_nr_offert(self,soup):
-        nr_offert = soup.find('div', class_='css-jjerc6')
-        return nr_offert.text
+    @staticmethod
+    def show_offert(nr):
+            try:
+                offert_nr = nr.text.split(' ')[-1]
+            except AttributeError:
+                offert_nr = None
+            return offert_nr
 
-    @show_data
+    def get_nr_offert(self,soup):
+        nr = soup.find('div', class_='css-jjerc6')
+        return self.show_offert(nr)
+
+    @staticmethod
+    def show_date(date):
+        unit = ['sekunda', 'sekundy', 'sekund', 'minutę', 'minuty', 'minut', 'minuta', 'godzina', 'godzin',
+                'godziny', 'dzień', 'dni', 'miesiąc',
+                'miesiące', 'miesięcy', 'rok', 'lata']
+        now = datetime.today().date()
+        try:
+            date_info = date.text.split(' ')
+            time_ago = int(date_info[-3])
+            time_unit = date_info[-2]
+        except TypeError and ValueError:
+            return
+        else:
+            if time_ago == None or time_unit == None:
+                return
+            if time_unit == 'sekunda' or time_unit == 'sekundę' or time_unit == 'sekund' or time_unit == 'sekundy':
+                return now - timedelta(seconds=int(time_ago))
+            elif time_unit == 'minut' or time_unit == 'minuty' or time_unit == 'minutę':
+                return now - timedelta(minutes=int(time_ago))
+            elif time_unit == 'godzinę' or time_unit == 'godzin' or time_unit == 'godziny':
+                return now - timedelta(hours=int(time_ago))
+            elif time_unit == 'dni' or time_unit == 'dzień':
+                return now - timedelta(days=int(time_ago))
+            elif time_unit == 'miesiąc' or time_unit == 'miesiące' or time_unit == 'miesięcy':
+                return now - relativedelta(months=int(time_ago))
+            elif time_unit == 'rok' or time_unit == 'lata' or time_unit == 'lat':
+                return now - relativedelta(years=int(time_ago))
+            else:
+                return
+
     def get_date_addition(self, soup: BeautifulSoup) -> str:
         date_addition = soup.find('div', class_='css-atkgr')
-        return date_addition.text
+        return self.show_date(date_addition)
 
-    @show_data
     def get_date_actualisation(self, soup):
         date_actualisation = soup.find('div', class_='css-zojvsz')
-        return date_actualisation.text
+        return self.show_date(date_actualisation)
 
     def create_new_flat(self, price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
                         market, advertiser_add, state_of_the_building_finish, city, province, district, street,
                         date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                        equipment, nr_offert, link)->Flats:
+                        equipment, nr_offert, contact_person, contact_number, link)->Flats:
         new_flat = Flats(
             price=price,
             area=area,
@@ -148,6 +227,8 @@ class WebScrapping(WebScrappingMainPage):
             elevator=elevator,
             equipment=equipment,
             nr_offert=nr_offert,
+            contact_person=contact_person,
+            contact_number=contact_number,
             link=link
         )
         return new_flat
