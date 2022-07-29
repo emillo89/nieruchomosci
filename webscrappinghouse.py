@@ -1,20 +1,25 @@
+import time
+
 from bs4 import BeautifulSoup
+from selenium import webdriver
 from selenium.common import NoSuchElementException, ElementClickInterceptedException, InvalidArgumentException
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webscrapping_main_page import WebScrappingMainPage
-from models_flat import *
+
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 from datetime import datetime
 
+'''Dodac to'''
 DETAILS = ['Powierzchnia','Forma własności','Liczba pokoi', 'Stan wykończenia','Piętro', 'Balkon / ogród / taras',
            'Czynsz','Miejsce parkingowe','Obsługa zdalna','Ogrzewanie','Rynek', 'Typ ogłoszeniodawcy','Dostępne od',
            'Rok budowy','Rodzaj zabudowy','Okna','Winda','Media','Zabezpieczenia','Wyposażenie','Informacje dodatkowe',
-           'Materiał budynku']
+           'Materiał budynku', 'Powierzchnia działki','Rodzaj zabudowy','Liczba pięter','Dom rekreacyjny','Dach', 'Pokrycie dachu',
+           'Poddasze', 'Ogrodzenie', 'Dojazd', 'Położenie', 'Okolica', 'Informacje dodatkowe']
 
-
-class WebScrapping(WebScrappingMainPage):
+class House(WebScrappingMainPage):
     def __init__(self):
         super().__init__()
 
@@ -124,6 +129,8 @@ class WebScrapping(WebScrappingMainPage):
                         dict['Piętro'] = None
                     except AttributeError:
                         dict['Piętro'] = None
+                    except KeyError:
+                        dict['Piętro'] = None
                     # if details[key].endswith('Film'):
                     #     details[key] = None
             return dict
@@ -195,89 +202,134 @@ class WebScrapping(WebScrappingMainPage):
         date_actualisation = soup.find('div', class_='css-zojvsz')
         return self.show_date(date_actualisation)
 
-    def create_new_flat(self, price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
-                        market, advertiser_add, state_of_the_building_finish, city, province, district, street,
-                        date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
-                        building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                        equipment, nr_offert, contact_person, contact_number, link)->Flats:
-        new_flat = Flats(
-            price=price,
-            area=area,
-            rooms=rooms,
-            own=own,
-            year_of_building=year_of_building,
-            available=available,
-            rent=rent,
-            floor=floor,
-            heating=heating,
-            car_park=car_park,
-            market=market,
-            advertiser_add=advertiser_add,
-            state_of_the_building_finish=state_of_the_building_finish,
-            city=city,
-            province=province,
-            district=district,
-            street=street,
-            date_addition_add=date_addition_add,
-            date_actualisation_add=date_actualisation_add,
-            type_of_building=type_of_building,
-            kind_of_investment=kind_of_investment,
-            building_material=building_material,
-            suplementary=suplementary,
-            remote_service=remote_service,
-            security=security,
-            media=media,
-            balcony=balcony,
-            windows=windows,
-            elevator=elevator,
-            equipment=equipment,
-            nr_offert=nr_offert,
-            contact_person=contact_person,
-            contact_number=contact_number,
-            link=link
-        )
-        return new_flat
+
+url = 'https://www.otodom.pl/pl/oferta/atrakcyjna-cena-komfortowy-dom-os-zodiak-186m2-ID4gFc0'
+service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
+driver = webdriver.Chrome(service=service)
+driver.get(url)
+
+time.sleep(1)
+accept = driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+accept.click()
+soup = BeautifulSoup(driver.page_source, 'lxml')
 
 
+def cosnietak(dict):
+    for key in DETAILS:
+
+        try:
+            dict[key]
+        except KeyError:
+            dict[key] = None
+        except AttributeError:
+            dict[key] = None
+        else:
+            # print(f"{details['Piętro']}")
+            try:
+                if dict[key].endswith('m²'):
+                    dict[key] = dict[key].split(' ')[0].replace(',', '.')
+                if dict[key].endswith('zł'):
+                    dict[key] = dict[key].replace(' ', '').split('zł')[0]
+                if dict[key] == 'zapytaj':
+                    dict[key] = None
+            except AttributeError:
+                dict[key] = None
+            try:
+                if dict['Piętro'].split('/')[0] == 'parter':
+                    cut = dict['Piętro'].split('/')
+                    dict['Piętro'] = f'1/{cut[1]}'
+                    # print("Udało się")
+                elif dict['Piętro'] == 'parter':
+                    dict['Piętro'] = f'1'
+            except IndexError:
+                dict['Piętro'] = None
+            except AttributeError:
+                dict['Piętro'] = None
+            except KeyError:
+                dict['Piętro'] = None
+            # if details[key].endswith('Film'):
+            #     details[key] = None
+    return dict
+
+def get_details(soup):
+    search = soup.find_all('div',class_='css-1qzszy5')
+    details = [info.getText() for info in search]
+    details_dict = {}
+    long = len(details)
+    for index in range(0, long, 2):
+        details_dict[details[index]] = details[index + 1]
+
+    return cosnietak(details_dict)
+
+def show_details(soup):
+    details = dict(sorted(get_details(soup).items()))
+    print(details)
+    print(len(details))
+    list = []
+    for index in details:
+        info = details[index]
+        list.append(info)
+    return list
+show = show_details(soup)
+print(show)
+
+'''Dodac elementy'''
+balcony, rent, roof, access,leisure_house, available, own, suplementary, numbers_of_floors, rooms, building_material, media, car_park, remote_service,\
+    fence, heating, windows, neighborhood, floor, attic, roofing, area, parcel_area, location, type_of_building, year_of_building, market, state_of_the_building_finish,\
+    advertiser_add, elevator, equipment, security= show_details(soup)
+'''to tez'''
+print(balcony, rent, roof, access,leisure_house, available, own, suplementary, numbers_of_floors, rooms, building_material, media, car_park, remote_service,\
+    fence, heating, windows, neighborhood, floor, attic, roofing, area, parcel_area, location, type_of_building, year_of_building, market, state_of_the_building_finish,\
+    advertiser_add, elevator, equipment, security)
+
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
+Base = declarative_base()
 
 
+class Flats(Base):
+    __tablename__ = 'property'
+    id = Column(Integer(), primary_key=True)
+    price = Column(Float(), nullable=False)
+    rooms = Column(Integer(), nullable=True)
+    area = Column(Float(), nullable=False)
+    own = Column(String(100), nullable=False)
+    year_of_building = Column(String(100), nullable=True)
+    available = Column(String(100), nullable=True)
+    rent = Column(Integer, nullable=True)
+    floor = Column(String(100), nullable=True)
+    heating = Column(String(100), nullable=True)
+    car_park = Column(String(100), nullable=True)
+    market = Column(String(100), nullable=True)
+    advertiser_add = Column(String(100), nullable=True)
+    state_of_the_building_finish = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=False)
+    province = Column(String(100), nullable=True)
+    district = Column(String(100), nullable=True)
+    street = Column(String(100), nullable=True)
+    date_addition_add = Column(DateTime, nullable=True)
+    date_actualisation_add = Column(DateTime, nullable=True)
+    date_add_to_database = Column(DateTime, default=datetime.utcnow().date())
+    type_of_building = Column(String(100), nullable=True)
+    kind_of_investment = Column(String(100), nullable=True)
+    building_material = Column(String(100), nullable=True)
+    suplementary = Column(String(100), nullable=True)
+    remote_service = Column(String(100), nullable=True)
+    security = Column(String(256), nullable=True)
+    media = Column(String(100), nullable=True)
+    balcony = Column(String(100), nullable=True)
+    windows = Column(String(100), nullable=True)
+    elevator = Column(String(100), nullable=True)
+    equipment = Column(String(100), nullable=True)
+    nr_offert = Column(String(256), nullable=True, unique=True)
+    contact_person = Column(String(100), nullable=True)
+    contact_number = Column(String(100), nullable=True)
+    link = Column(String(256), nullable=True)
 
 
-
-
-
-
-
-
-
-# url = 'https://www.otodom.pl/pl/oferta/unikatowe-mieszkanie-z-widokiem-na-centrum-ID4hom3'
-# service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
-# driver = webdriver.Chrome(service=service)
-# driver.get(url)
-# time.sleep(0.5)
-# soup = BeautifulSoup(driver.page_source, 'lxml')
-#
-# info = soup.find_all('a', class_='css-1in5nid')
-# locations = [locate.getText() for locate in info]
-# kind_of_investment = locations[0].split(' ')[0]
-# city = locations[2]
-# province = locations[1]
-# district = locations[3]
-# street = locations[-1]
-# print(f'{city} - {province} - {street}')
-# rooms = soup.find_all('div',class_='css-1qzszy5')
-# details = [cos.getText() for cos in rooms]
-# long = len(details)
-# new_dict = {}
-# # for index in range(0,long,2):
-# #     new_dict[details[index]] = details[index+1]
-# # print(new_dict)
-#
-#
-# # print(details)
-# try:
-#     accept = soup.find('button', '#onetrust-accept-btn-handler')
-# except NoSuchElementException:
-#     accept = None
-# else:
-#     accept.click()
+engine = create_engine('sqlite:///flats.db', echo=True)
+Base.metadata.create_all(bind=engine)
+Session = sessionmaker(bind=engine)
