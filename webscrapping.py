@@ -11,7 +11,8 @@ from datetime import datetime
 DETAILS = ['Powierzchnia','Forma własności','Liczba pokoi', 'Stan wykończenia','Piętro', 'Balkon / ogród / taras',
            'Czynsz','Miejsce parkingowe','Obsługa zdalna','Ogrzewanie','Rynek', 'Typ ogłoszeniodawcy','Dostępne od',
            'Rok budowy','Rodzaj zabudowy','Okna','Winda','Media','Zabezpieczenia','Wyposażenie','Informacje dodatkowe',
-           'Materiał budynku']
+           'Materiał budynku', 'Powierzchnia działki','Rodzaj zabudowy','Liczba pięter','Dom rekreacyjny','Dach', 'Pokrycie dachu',
+           'Poddasze', 'Ogrodzenie', 'Dojazd', 'Położenie', 'Okolica', 'Informacje dodatkowe']
 
 
 class WebScrapping(WebScrappingMainPage):
@@ -48,13 +49,13 @@ class WebScrapping(WebScrappingMainPage):
 
     @staticmethod
     def check_price(price):
-            try:
-                price = price.getText().replace(' ', '').split('zł')[0].replace(',','.')
-            except AttributeError:
-                price = None
-            if price == 'Zapytajocenę':
-                price = None
-            return price
+        try:
+            price = price.getText().replace(' ', '').split('zł')[0].replace(',','.')
+        except AttributeError:
+            price = None
+        if price == 'Zapytajocenę':
+            price = None
+        return price
 
     def get_price(self, soup):
         price = soup.find('strong', class_='css-8qi9av')
@@ -95,38 +96,40 @@ class WebScrapping(WebScrappingMainPage):
 
     @staticmethod
     def take_all_details(dict):
-            for key in DETAILS:
+        for key in DETAILS:
+            try:
+                dict[key]
+            except KeyError:
+                dict[key] = None
+            except AttributeError:
+                dict[key] = None
+            else:
+                # print(f"{details['Piętro']}")
                 try:
-                    dict[key]
-                except KeyError:
-                    dict[key] = None
+                    if dict[key].endswith('m²'):
+                        dict[key] = dict[key].split(' ')[0].replace(',', '.')
+                    if dict[key].endswith('zł'):
+                        dict[key] = dict[key].replace(' ', '').split('zł')[0]
+                    if dict[key] == 'zapytaj':
+                        dict[key] = None
                 except AttributeError:
                     dict[key] = None
-                else:
-                    # print(f"{details['Piętro']}")
-                    try:
-                        if dict[key].endswith('m²'):
-                            dict[key] = dict[key].split(' ')[0].replace(',', '.')
-                        if dict[key].endswith('zł'):
-                            dict[key] = dict[key].replace(' ', '').split('zł')[0]
-                        if dict[key] == 'zapytaj':
-                            dict[key] = None
-                    except AttributeError:
-                        dict[key] = None
-                    try:
-                        if dict['Piętro'].split('/')[0] == 'parter':
-                            cut = dict['Piętro'].split('/')
-                            dict['Piętro'] = f'1/{cut[1]}'
-                            # print("Udało się")
-                        elif dict['Piętro'] == 'parter':
-                            dict['Piętro'] = f'1'
-                    except IndexError:
-                        dict['Piętro'] = None
-                    except AttributeError:
-                        dict['Piętro'] = None
-                    # if details[key].endswith('Film'):
-                    #     details[key] = None
-            return dict
+                try:
+                    if dict['Piętro'].split('/')[0] == 'parter':
+                        cut = dict['Piętro'].split('/')
+                        dict['Piętro'] = f'1/{cut[1]}'
+                        # print("Udało się")
+                    elif dict['Piętro'] == 'parter':
+                        dict['Piętro'] = f'1'
+                except IndexError:
+                    dict['Piętro'] = None
+                except AttributeError:
+                    dict['Piętro'] = None
+                except KeyError:
+                    dict['Piętro'] = None
+                # if details[key].endswith('Film'):
+                #     details[key] = None
+        return dict
 
     def __get_details(self, soup):
         search = soup.find_all('div',class_='css-1qzszy5')
@@ -147,11 +150,11 @@ class WebScrapping(WebScrappingMainPage):
 
     @staticmethod
     def show_offert(nr):
-            try:
-                offert_nr = nr.text.split(' ')[-1]
-            except AttributeError:
-                offert_nr = None
-            return offert_nr
+        try:
+            offert_nr = nr.text.split(' ')[-1]
+        except AttributeError:
+            offert_nr = None
+        return offert_nr
 
     def get_nr_offert(self,soup):
         nr = soup.find('div', class_='css-jjerc6')
@@ -199,7 +202,9 @@ class WebScrapping(WebScrappingMainPage):
                         market, advertiser_add, state_of_the_building_finish, city, province, district, street,
                         date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                        equipment, nr_offert, contact_person, contact_number, link)->Flats:
+                        equipment, roof, access, leisure_house,numbers_of_floors,fence,neighborhood,attic,roofing,
+                        parcel_area, location, contact_person, contact_number, link, nr_offert,)->Flats:
+
         new_flat = Flats(
             price=price,
             area=area,
@@ -231,14 +236,23 @@ class WebScrapping(WebScrappingMainPage):
             windows=windows,
             elevator=elevator,
             equipment=equipment,
-            nr_offert=nr_offert,
+            roof=roof,
+            access=access,
+            leisure_house=leisure_house,
+            numbers_of_floors=numbers_of_floors,
+            fence=fence,
+            neighborhood=neighborhood,
+            attic=attic,
+            roofing=roofing,
+            parcel_area=parcel_area,
+            location=location,
             contact_person=contact_person,
             contact_number=contact_number,
-            link=link
+            link=link,
+            nr_offert=nr_offert
         )
+
         return new_flat
-
-
 
 
 
