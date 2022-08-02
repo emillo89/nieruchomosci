@@ -20,8 +20,12 @@ class WebScrapping(WebScrappingMainPage):
         super().__init__()
 
     def __contact(self):
-        accept = self.driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
-        accept.click()
+        try:
+            accept = self.driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+        except NoSuchElementException:
+            return
+        else:
+            accept.click()
         try:
             show_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber button')
             show_nr.click()
@@ -37,7 +41,7 @@ class WebScrapping(WebScrappingMainPage):
             except NoSuchElementException:
                 contact_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
             else:
-                cancel.clic()
+                cancel.click()
         contact_person = self.driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
         return contact_nr, contact_person
 
@@ -173,8 +177,10 @@ class WebScrapping(WebScrappingMainPage):
         except TypeError and ValueError:
             return
         else:
-            if time_ago == None or time_unit == None:
+            if time_ago == None and time_unit == None:
                 return
+            if time_ago == None:
+                time_ago = 1
             if time_unit == 'sekunda' or time_unit == 'sekundę' or time_unit == 'sekund' or time_unit == 'sekundy':
                 return now - timedelta(seconds=int(time_ago))
             elif time_unit == 'minut' or time_unit == 'minuty' or time_unit == 'minutę':
@@ -198,16 +204,18 @@ class WebScrapping(WebScrappingMainPage):
         date_actualisation = soup.find('div', class_='css-zojvsz')
         return self.show_date(date_actualisation)
 
-    def create_new_flat(self, price, area, rooms, own, year_of_building, available, rent, floor, heating, car_park,
-                        market, advertiser_add, state_of_the_building_finish, city, province, district, street,
-                        date_addition_add, date_actualisation_add, type_of_building, kind_of_investment,
+    def create_new_flat(self, kind_of_investment, city, area, price, rooms, own, year_of_building, available, rent,
+                        floor, heating, car_park,market, advertiser_add, state_of_the_building_finish, province,
+                        district, street,date_addition_add, date_actualisation_add, type_of_building,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
                         equipment, roof, access, leisure_house,numbers_of_floors,fence,neighborhood,attic,roofing,
                         parcel_area, location, contact_person, contact_number, link, nr_offert,)->Flats:
 
         new_flat = Flats(
-            price=price,
+            kind_of_investment=kind_of_investment,
+            city=city,
             area=area,
+            price=price,
             rooms=rooms,
             own=own,
             year_of_building=year_of_building,
@@ -219,14 +227,12 @@ class WebScrapping(WebScrappingMainPage):
             market=market,
             advertiser_add=advertiser_add,
             state_of_the_building_finish=state_of_the_building_finish,
-            city=city,
             province=province,
             district=district,
             street=street,
             date_addition_add=date_addition_add,
             date_actualisation_add=date_actualisation_add,
             type_of_building=type_of_building,
-            kind_of_investment=kind_of_investment,
             building_material=building_material,
             suplementary=suplementary,
             remote_service=remote_service,
