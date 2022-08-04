@@ -14,9 +14,10 @@ class WebScrappingMainPage(WebScrapper):
         return pages
 
     def get_links_with_main_page(self, soup):
-        links = soup.find_all('a', class_='css-rvjxyq')
+        links = soup.find_all('a', class_='css-b2mfz3')
         for link in links:
             if link['href'].startswith('/'):
                 link = f"https://www.otodom.pl{link['href']}"
                 if link not in self.all_links:
                     self.all_links.append(link)
+

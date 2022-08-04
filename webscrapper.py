@@ -3,12 +3,13 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
 
+
 class WebScrapper:
     def __init__(self):
-        # option = webdriver.ChromeOptions()
-        # option.add_argument('headless')
+        option = webdriver.ChromeOptions()
+        option.add_argument('headless')
         service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
-        self.driver = webdriver.Chrome(service=service)
+        self.driver = webdriver.Chrome(service=service, options=option)
         self.driver.implicitly_wait(3)
         self.driver.maximize_window()
 

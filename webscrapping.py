@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from selenium.common import NoSuchElementException, ElementClickInterceptedException, InvalidArgumentException
 from selenium.webdriver.common.by import By
+
+from webscrapper import WebScrapper
 from webscrapping_main_page import WebScrappingMainPage
 from models_flat import *
 from datetime import timedelta
@@ -8,11 +10,12 @@ from dateutil.relativedelta import relativedelta
 
 from datetime import datetime
 
-DETAILS = ['Powierzchnia','Forma własności','Liczba pokoi', 'Stan wykończenia','Piętro', 'Balkon / ogród / taras',
-           'Czynsz','Miejsce parkingowe','Obsługa zdalna','Ogrzewanie','Rynek', 'Typ ogłoszeniodawcy','Dostępne od',
-           'Rok budowy','Rodzaj zabudowy','Okna','Winda','Media','Zabezpieczenia','Wyposażenie','Informacje dodatkowe',
-           'Materiał budynku', 'Powierzchnia działki','Rodzaj zabudowy','Liczba pięter','Dom rekreacyjny','Dach', 'Pokrycie dachu',
-           'Poddasze', 'Ogrodzenie', 'Dojazd', 'Położenie', 'Okolica', 'Informacje dodatkowe']
+DETAILS = ['Powierzchnia', 'Forma własności', 'Liczba pokoi', 'Stan wykończenia', 'Piętro', 'Balkon / ogród / taras',
+           'Czynsz', 'Miejsce parkingowe', 'Obsługa zdalna', 'Ogrzewanie', 'Rynek', 'Typ ogłoszeniodawcy',
+           'Dostępne od', 'Rok budowy', 'Rodzaj zabudowy', 'Okna', 'Winda', 'Media', 'Zabezpieczenia', 'Wyposażenie',
+           'Informacje dodatkowe', 'Materiał budynku', 'Powierzchnia działki', 'Rodzaj zabudowy', 'Liczba pięter',
+           'Dom rekreacyjny', 'Dach', 'Pokrycie dachu', 'Poddasze', 'Ogrodzenie', 'Dojazd', 'Położenie', 'Okolica',
+           'Informacje dodatkowe']
 
 
 class WebScrapping(WebScrappingMainPage):
@@ -23,26 +26,45 @@ class WebScrapping(WebScrappingMainPage):
         try:
             accept = self.driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
         except NoSuchElementException:
-            return
+            print('No accept')
+            contact_nr = None
+            contact_person = None
+            return contact_nr, contact_person
         else:
             accept.click()
         try:
             show_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber button')
             show_nr.click()
         except NoSuchElementException:
+            print('No show1')
             contact_nr = None
         except ElementClickInterceptedException:
+            print("no show2")
             contact_nr = None
         except TypeError:
+            print("No show3")
             contact_nr = None
         else:
             try:
                 cancel = self.driver.find_element(By.XPATH, '//*[@id="__next"]/div[2]/div/div/span')
             except NoSuchElementException:
-                contact_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
+                print("cancel")
+                pass
             else:
                 cancel.click()
-        contact_person = self.driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
+            try:
+                contact_nr = self.driver.find_element(By.CSS_SELECTOR, '.phoneNumber a').text
+            except TypeError:
+                print('typeerror')
+                contact_nr = None
+            except NoSuchElementException:
+                print("contact nosuch")
+                contact_nr = None
+        try:
+            contact_person = self.driver.find_element(By.CSS_SELECTOR, '.css-1dihcof span').text
+        except NoSuchElementException:
+            print("person no such")
+            contact_person = None
         return contact_nr, contact_person
 
     def get_links(self, url):
@@ -54,7 +76,7 @@ class WebScrapping(WebScrappingMainPage):
     @staticmethod
     def check_price(price):
         try:
-            price = price.getText().replace(' ', '').split('zł')[0].replace(',','.')
+            price = price.getText().replace(' ', '').split('zł')[0].replace(',', '.')
         except AttributeError:
             price = None
         if price == 'Zapytajocenę':
@@ -114,6 +136,12 @@ class WebScrapping(WebScrappingMainPage):
                         dict[key] = dict[key].split(' ')[0].replace(',', '.')
                     if dict[key].endswith('zł'):
                         dict[key] = dict[key].replace(' ', '').split('zł')[0]
+                    elif dict[key].endswith('EUR'):
+                        dict[key] = None
+                    elif dict[key].endswith('$'):
+                        dict[key] = None
+                    else:
+                        dict[key] = None
                     if dict[key] == 'zapytaj':
                         dict[key] = None
                 except AttributeError:
@@ -259,8 +287,6 @@ class WebScrapping(WebScrappingMainPage):
         )
 
         return new_flat
-
-
 
 
 
