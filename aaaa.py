@@ -32,10 +32,10 @@ add_link(link)
 
 def use_link():
     with open('nowy.txt', "r", encoding="UTF-8") as file:
-        for li in file:
-            print(li)
+       for i in file:
+        print(file.readline())
 
-# use_link()
-for i in link:
-    print(i)
+use_link()
+# for i in link:
+#     print(i)
 

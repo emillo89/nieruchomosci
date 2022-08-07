@@ -62,9 +62,10 @@ Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing'''
 
 def parse_page(page: int):
     # all_links = parse_main_page(page)
-    with open('link_offert.txt', 'r', encoding='UTF-8') as all_links:
+    with open('link_offert.txt', 'r+', encoding='UTF-8') as all_links:
 
         for url in all_links:
+            print(url)
             try:
                 site = WebScrapping()
                 soup, contact_person, contact_number = site.get_links(url)
@@ -111,5 +112,5 @@ def parse_page(page: int):
                 except IntegrityError:
                     print("yyyyy")
                     session.rollback()
-parse_main_page(1)
+# parse_main_page(1)
 parse_page(1)

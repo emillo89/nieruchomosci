@@ -126,6 +126,7 @@ class WebScrapping(WebScrappingMainPage):
             try:
                 dict[key]
             except KeyError:
+                print('Tutaj blad?????')
                 dict[key] = None
             except AttributeError:
                 dict[key] = None
@@ -161,6 +162,7 @@ class WebScrapping(WebScrappingMainPage):
                     dict['Piętro'] = None
                 # if details[key].endswith('Film'):
                 #     details[key] = None
+        print(dict)
         return dict
 
     def __get_details(self, soup):
@@ -170,6 +172,7 @@ class WebScrapping(WebScrappingMainPage):
         long = len(details)
         for index in range(0, long, 2):
             details_dict[details[index]] = details[index + 1]
+        print(details_dict)
         return self.take_all_details(details_dict)
 
     def show_details(self, soup):
