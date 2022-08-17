@@ -30,7 +30,7 @@ app.layout = html.Div([
             html.Img(src=app.get_asset_url('analytics.png'),
                      id='logo-image',
                      style={'height': '60px',
-                            'wodth': 'auto',
+                            'width': 'auto',
                             'margin-bottom': '25px'}
 
             )
@@ -47,13 +47,14 @@ app.layout = html.Div([
 
     ], id='header', className='row flex-display', style={'margin-buttom':'25px'}),
 
+
     html.Div([
            html.Div([
                 html.H6(children='Total add',
                         style={'textAlign': 'center',
                                'color': 'white'
                                }),
-               html.P(f'{total_count}',
+                html.P(f'{total_count}',
                         style={'textAlign': 'center',
                                'color': 'orange',
                                'fontSize': 40}),
@@ -65,8 +66,57 @@ app.layout = html.Div([
                         style={'textAlign': 'center',
                                'color': 'orange',
                                'fontSize': 15}),
+           ], className='card_container three columns'),
+
+            html.Div([
+                html.H6(children='....',
+                        style={'textAlign': 'center',
+                               'color': 'white'
+                               }),
+                html.P(f'{total_count}',
+                        style={'textAlign': 'center',
+                               'color': '#dd1e35',
+                               'fontSize': 40}),
+           ], className='card_container three columns'),
+
+
+            html.Div([
+                html.H6(children='....',
+                        style={'textAlign': 'center',
+                               'color': 'white'
+                               }),
+                html.P(f'{total_count}',
+                        style={'textAlign': 'center',
+                               'color': 'green',
+                               'fontSize': 40}),
+           ], className='card_container three columns'),
+
+            html.Div([
+                html.H6(children='....',
+                        style={'textAlign': 'center',
+                               'color': 'white'
+                               }),
+                html.P(f'{total_count}',
+                        style={'textAlign': 'center',
+                               'color': '#e55467',
+                               'fontSize': 40}),
            ], className='card_container three columns')
-    ], className='row flex display')
+
+    ], className='row flex display'),
+
+
+    html.Div([
+        html.Div([
+            html.P('Select city:', className='fix_label',style={'color':'white'}),
+            dcc.Dropdown
+
+        ], className='create_container three columns')
+
+    ], className='row flex-display')
+
+
+
+
 ], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'} )
 
 
