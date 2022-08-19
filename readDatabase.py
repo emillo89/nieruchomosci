@@ -31,3 +31,7 @@ class ReadData:
     def count_flats(self):
         flats = self.df.loc[self.df['kind_of_investment'] == 'Mieszkanie'].count()['id']
         return flats
+
+    def show_city_dropdown(self):
+        city = self.df['city'].unique()
+        return city
