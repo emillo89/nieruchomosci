@@ -35,3 +35,7 @@ class ReadData:
     def show_city_dropdown(self):
         city = self.df['city'].unique()
         return city
+
+    def show_market_dropdown(self):
+        market = self.df['kind_of_investment'].unique()
+        return market

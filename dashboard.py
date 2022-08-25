@@ -18,11 +18,15 @@ total_count = df.count_totat_add()
 '''2. Kind of investments'''
 houses = df.count_houses()
 flats = df.count_flats()
-print(houses)
+# print(houses)
 
 '''3. Select city dropdown'''
 city = df.show_city_dropdown()
-city = np.append(city, 'General')
+city = np.append(city, 'All')
+
+'''4. Select market dropdown'''
+market = df.show_market_dropdown()
+market= np.append(market, 'All')
 
 app = Dash(__name__)
 
@@ -117,10 +121,27 @@ app.layout = html.Div(children=[
                                     for c in city], className='dcc_compon'
                          ),
 
+            html.P('Select market:', style={'textAlign': 'center',
+                                          'color':'white',
+                                          'fontSize': 20}),
+            dcc.Dropdown(id='w_market',
+                         multi=False,
+                         value='Dom',
+                         placeholder='Select market',
+                         options = [{'label': c, 'value':c}
+                                    for c in market], className='dcc_compon'
+                         ),
+
         ], className='create_container three columns'),
 
         html.Div([
             dcc.Graph(id ='pie_chart', config={'displayModeBar': 'hover'}
+                      )
+
+        ],className='create_container four columns'),
+
+        html.Div([
+            dcc.Graph(id ='pie_chart_two', config={'displayModeBar': 'hover'}
                       )
 
         ],className='create_container four columns')
@@ -129,42 +150,76 @@ app.layout = html.Div(children=[
     ], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'})
 
 
-@app.callback(Output('pie_chart', 'figure'),
-              Input('w_city','value'))
-def update_graph(w_city):
+def connection():
     data_reader = ReadData('offert.db')
     df = data_reader.query_connection()
+    return df
+
+@app.callback(Output('pie_chart', 'figure'),
+              Input('w_city','value'),
+              Input('w_market','value')
+              )
+def update_graph(w_city, w_market):
+    df = connection()
+    # if w_city == 'All':
+    #     filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count})
+    # else:
+    #     filtered_df = df[df['city'] == w_city].groupby('kind_of_investment').agg({'id':pd.Series.count})
+
+    # filtered_df = df[df['city'] == w_city][df['kind_of_investment'] == w_market].agg({'id': pd.Series.count})
+    # lista = []
+    # if w_city == 'All':
+    #     pass
+    # elif w_city != 'All':
+    #     lista.append('city')
+    # if w_market == 'All':
+    #     pass
+    # elif w_market != 'All':
+    #     lista.append('market')
+
+    new = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
+
+    new2 = new[(new['city'] == w_city) & (new['kind_of_investment'] == w_market)]
+
+
+    print(new2)
+    ind = new2.index
+
+    print(ind)
 
 
 
-    filtered_df = df[df['city']==w_city].groupby('kind_of_investment').agg({'id':pd.Series.count})
-    houeses = filtered_df.loc['Dom']['id']
-    flats = filtered_df.loc['Mieszkanie']['id']
+
+    # if w_city != 'All':
+    #     city_new = new['city'] == w_city
+    # if w_market != 'All':
+    #     market_new = new['market'] == w_market
+    # show = new[(new['city'] == w_city) & (new['market'] == w_market)]
+    # print(show)
 
 
-    # fig = px.pie(filtered_df, values=filtered_df.id, names=filtered_df.index, hole=.5)
+    # filtered_df = df.groupby(['city', 'kind_of_investment'])
     #
-    # fig.update_layout(transition_duration=500)
+    # houses = filtered_df.loc['Dom']['id']
+    # flats = filtered_df.loc['Mieszkanie']['id']
+    colors = ['orange', '#dd1e35']
 
-    # return fig
-
-    colors = ['orange', '#dd1e35', 'green', '#e55467']
-
+    # print(lista)
     return {
         'data': [go.Pie(
-            labels=['houses', 'flats'],
-            values=[houses, flats],
+            labels=['houses','flats'],
+            values=[new2.loc[k]['id'] for k in ind],
             marker=dict(colors=colors),
             hoverinfo='label+value+percent',
             textinfo='label+value',
             hole=.7,
-            rotation=45,
-            # insidetextorientation= 'radial'
+            rotation=15,
+            insidetextorientation= 'radial'
 
         )],
 
         'layout': go.Layout(
-            title={'text': 'Total Cases: ' + (w_city),
+            title={'text': 'Advertisements: ' + (w_city),
                    'y': 0.93,
                    'x': 0.5,
                    'xanchor': 'center',
@@ -173,13 +228,59 @@ def update_graph(w_city):
                        'size': 20},
             font=dict(family='sans-serif',
                       color='white',
-                      size=12),
+                      size=18),
             hovermode='closest',
             paper_bgcolor='#1f2c56',
             plot_bgcolor='#1f2c56',
             legend={'orientation': 'h',
                     'bgcolor': '#1f2c56',
-                    'xanchor': 'center', 'x': 0.5, 'y': -0.7}
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.2}
+
+        )
+    }
+
+@app.callback(Output('pie_chart_two', 'figure'),
+              Input('w_city','value'))
+def update_graph_two(w_city):
+    df = connection()
+    if w_city == 'All':
+        filtered_df = df.groupby('market').agg({'id': pd.Series.count})
+    else:
+        filtered_df = df[df['city']==w_city].groupby('market').agg({'id':pd.Series.count})
+    wtorny = filtered_df.loc['wtórny']['id']
+    pierwotny = filtered_df.loc['pierwotny']['id']
+    colors = ['green']
+
+    return {
+        'data': [go.Pie(
+            labels=['wtorny', 'pierwotny'],
+            values=[wtorny, pierwotny],
+            marker=dict(colors=colors),
+            hoverinfo='label+value+percent',
+            textinfo='label+value',
+            hole=.7,
+            rotation=15,
+            insidetextorientation= 'radial'
+
+        )],
+
+        'layout': go.Layout(
+            title={'text': 'Advertisements: ' + (w_city),
+                   'y': 0.93,
+                   'x': 0.5,
+                   'xanchor': 'center',
+                   'yanchor': 'top'},
+            titlefont={'color': 'white',
+                       'size': 20},
+            font=dict(family='sans-serif',
+                      color='white',
+                      size=18),
+            hovermode='closest',
+            paper_bgcolor='#1f2c56',
+            plot_bgcolor='#1f2c56',
+            legend={'orientation': 'h',
+                    'bgcolor': '#1f2c56',
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.2}
 
         )
     }

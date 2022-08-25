@@ -5,6 +5,11 @@ body {
   margin: 5%;
 }
 
+#pie_chart{
+    size: 150%;
+}
+
+
 .card_container {
   border-radius: 5px;
   background-color: #1f2c56;
