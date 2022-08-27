@@ -25,8 +25,15 @@ city = df.show_city_dropdown()
 city = np.append(city, 'All')
 
 '''4. Select market dropdown'''
+kind_investition = df.show_kind_of_investment_dropdown()
+kind_investition= np.append(kind_investition, 'All')
+print(kind_investition)
+
+'''5. Select market dropdown'''
 market = df.show_market_dropdown()
-market= np.append(market, 'All')
+# market = np.append(market, 'All')
+market = ['pierwotny' 'wtórny' 'All']
+print(market)
 
 app = Dash(__name__)
 
@@ -115,10 +122,21 @@ app.layout = html.Div(children=[
                                           'fontSize': 20}),
             dcc.Dropdown(id='w_city',
                          multi=False,
-                         value='Warszawa',
+                         value='All',
                          placeholder='Select City',
                          options = [{'label': c, 'value':c}
                                     for c in city], className='dcc_compon'
+                         ),
+
+            html.P('Select kind of investment:', style={'textAlign': 'center',
+                                          'color':'white',
+                                          'fontSize': 20}),
+            dcc.Dropdown(id='w_kind_of_investment',
+                         multi=False,
+                         value='All',
+                         placeholder='Select kind of investition',
+                         options = [{'label': c, 'value':c}
+                                    for c in kind_investition], className='dcc_compon'
                          ),
 
             html.P('Select market:', style={'textAlign': 'center',
@@ -126,11 +144,11 @@ app.layout = html.Div(children=[
                                           'fontSize': 20}),
             dcc.Dropdown(id='w_market',
                          multi=False,
-                         value='Dom',
+                         value='pierwotny',
                          placeholder='Select market',
                          options = [{'label': c, 'value':c}
                                     for c in market], className='dcc_compon'
-                         ),
+                         )
 
         ], className='create_container three columns'),
 
@@ -157,58 +175,31 @@ def connection():
 
 @app.callback(Output('pie_chart', 'figure'),
               Input('w_city','value'),
-              Input('w_market','value')
+              Input('w_kind_of_investment','value')
               )
-def update_graph(w_city, w_market):
+def update_graph(w_city, w_kind_of_investment):
     df = connection()
-    # if w_city == 'All':
-    #     filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count})
-    # else:
-    #     filtered_df = df[df['city'] == w_city].groupby('kind_of_investment').agg({'id':pd.Series.count})
+    if w_city == 'All' and w_kind_of_investment == 'All':
+        filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df
+    elif w_city == 'All' and w_kind_of_investment != 'All':
+        filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
+        print(data)
+    elif w_city != 'All' and w_kind_of_investment != 'All':
+        filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    else:
+        filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city)]
 
-    # filtered_df = df[df['city'] == w_city][df['kind_of_investment'] == w_market].agg({'id': pd.Series.count})
-    # lista = []
-    # if w_city == 'All':
-    #     pass
-    # elif w_city != 'All':
-    #     lista.append('city')
-    # if w_market == 'All':
-    #     pass
-    # elif w_market != 'All':
-    #     lista.append('market')
-
-    new = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
-
-    new2 = new[(new['city'] == w_city) & (new['kind_of_investment'] == w_market)]
-
-
-    print(new2)
-    ind = new2.index
-
-    print(ind)
-
-
-
-
-    # if w_city != 'All':
-    #     city_new = new['city'] == w_city
-    # if w_market != 'All':
-    #     market_new = new['market'] == w_market
-    # show = new[(new['city'] == w_city) & (new['market'] == w_market)]
-    # print(show)
-
-
-    # filtered_df = df.groupby(['city', 'kind_of_investment'])
-    #
-    # houses = filtered_df.loc['Dom']['id']
-    # flats = filtered_df.loc['Mieszkanie']['id']
+    ind = data.index
     colors = ['orange', '#dd1e35']
 
-    # print(lista)
     return {
         'data': [go.Pie(
-            labels=['houses','flats'],
-            values=[new2.loc[k]['id'] for k in ind],
+            labels=[data.loc[k]['kind_of_investment'] for k in ind],
+            values=[data.loc[k]['id'] for k in ind],
             marker=dict(colors=colors),
             hoverinfo='label+value+percent',
             textinfo='label+value',
@@ -240,21 +231,32 @@ def update_graph(w_city, w_market):
     }
 
 @app.callback(Output('pie_chart_two', 'figure'),
-              Input('w_city','value'))
-def update_graph_two(w_city):
+              Input('w_city','value'),
+              Input('w_kind_of_investment','value'))
+def update_graph_two(w_city, w_kind_of_investment):
     df = connection()
-    if w_city == 'All':
-        filtered_df = df.groupby('market').agg({'id': pd.Series.count})
+    if w_city == 'All' and w_kind_of_investment == 'All':
+        filtered_df = df.groupby('market').agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df
+    elif w_city == 'All' and w_kind_of_investment != 'All':
+        filtered_df = df.groupby(['market','kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
+        print(data)
+    elif w_city != 'All' and w_kind_of_investment != 'All':
+        filtered_df = df.groupby(['city','kind_of_investment', 'market'])[['id']].count().reset_index()
+        data = filtered_df[
+            (filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
     else:
-        filtered_df = df[df['city']==w_city].groupby('market').agg({'id':pd.Series.count})
-    wtorny = filtered_df.loc['wtórny']['id']
-    pierwotny = filtered_df.loc['pierwotny']['id']
+        filtered_df = df.groupby(['city', 'market'])[['id']].count().reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city)]
+
+    ind = data.index
     colors = ['green']
 
     return {
         'data': [go.Pie(
-            labels=['wtorny', 'pierwotny'],
-            values=[wtorny, pierwotny],
+            labels=[data.loc[k]['market'] for k in ind],
+            values=[data.loc[k]['id'] for k in ind],
             marker=dict(colors=colors),
             hoverinfo='label+value+percent',
             textinfo='label+value',
@@ -265,7 +267,7 @@ def update_graph_two(w_city):
         )],
 
         'layout': go.Layout(
-            title={'text': 'Advertisements: ' + (w_city),
+            title={'text': 'Market: ' + (w_kind_of_investment),
                    'y': 0.93,
                    'x': 0.5,
                    'xanchor': 'center',
