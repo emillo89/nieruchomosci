@@ -41,5 +41,10 @@ class ReadData:
         return kind_of_investment
 
     def show_market_dropdown(self):
+        self.fillna('nieznany', 'market')
         market = self.df['market'].unique()
         return market
+
+    def fillna(self, value, column):
+        self.df[column].fillna(value, inplace=True)
+

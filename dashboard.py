@@ -30,9 +30,10 @@ kind_investition= np.append(kind_investition, 'All')
 print(kind_investition)
 
 '''5. Select market dropdown'''
+
 market = df.show_market_dropdown()
-# market = np.append(market, 'All')
-market = ['pierwotny' 'wtórny' 'All']
+market = np.append(market, 'All')
+# market = ['pierwotny', 'wtórny', 'nieznany', 'All']
 print(market)
 
 app = Dash(__name__)
@@ -113,7 +114,7 @@ app.layout = html.Div(children=[
                                'fontSize': 40}),
            ], className='card_container three columns')
 
-    ],className='row flex-display'),
+    ], className='row flex-display'),
 
     html.Div([
         html.Div([
@@ -144,7 +145,7 @@ app.layout = html.Div(children=[
                                           'fontSize': 20}),
             dcc.Dropdown(id='w_market',
                          multi=False,
-                         value='pierwotny',
+                         value='All',
                          placeholder='Select market',
                          options = [{'label': c, 'value':c}
                                     for c in market], className='dcc_compon'
@@ -156,13 +157,13 @@ app.layout = html.Div(children=[
             dcc.Graph(id ='pie_chart', config={'displayModeBar': 'hover'}
                       )
 
-        ],className='create_container four columns'),
+        ], className='create_container four columns'),
 
         html.Div([
             dcc.Graph(id ='pie_chart_two', config={'displayModeBar': 'hover'}
                       )
 
-        ],className='create_container four columns')
+        ], className='create_container four columns')
     ], className='row flex-display'),
 
     ], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'})
@@ -194,7 +195,7 @@ def update_graph(w_city, w_kind_of_investment):
         data = filtered_df[(filtered_df['city'] == w_city)]
 
     ind = data.index
-    colors = ['orange', '#dd1e35']
+    colors = [ '#dd1e35', '#778899']
 
     return {
         'data': [go.Pie(
@@ -235,6 +236,7 @@ def update_graph(w_city, w_kind_of_investment):
               Input('w_kind_of_investment','value'))
 def update_graph_two(w_city, w_kind_of_investment):
     df = connection()
+    df['market'].fillna('nieznany', inplace=True)
     if w_city == 'All' and w_kind_of_investment == 'All':
         filtered_df = df.groupby('market').agg({'id': pd.Series.count}).reset_index()
         data = filtered_df
