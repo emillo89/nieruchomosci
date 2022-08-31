@@ -163,8 +163,17 @@ app.layout = html.Div(children=[
             dcc.Graph(id ='pie_chart_two', config={'displayModeBar': 'hover'}
                       )
 
-        ], className='create_container four columns')
+        ], className='create_container four columns'),
+
     ], className='row flex-display'),
+
+    html.Div([
+        html.Div([
+            dcc.Graph(id = 'line_chart', config={'displayModeBar': 'hover'}
+                      )
+        ], className='create_container six columns'),
+
+    ], className='row flex-display')
 
     ], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'})
 
@@ -233,24 +242,36 @@ def update_graph(w_city, w_kind_of_investment):
 
 @app.callback(Output('pie_chart_two', 'figure'),
               Input('w_city','value'),
-              Input('w_kind_of_investment','value'))
-def update_graph_two(w_city, w_kind_of_investment):
+              Input('w_kind_of_investment','value'),
+              Input('w_market','value'))
+def update_graph_two(w_city, w_kind_of_investment, w_market):
     df = connection()
     df['market'].fillna('nieznany', inplace=True)
-    if w_city == 'All' and w_kind_of_investment == 'All':
+    if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         filtered_df = df.groupby('market').agg({'id': pd.Series.count}).reset_index()
         data = filtered_df
-    elif w_city == 'All' and w_kind_of_investment != 'All':
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
         filtered_df = df.groupby(['market','kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
         data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
         print(data)
-    elif w_city != 'All' and w_kind_of_investment != 'All':
-        filtered_df = df.groupby(['city','kind_of_investment', 'market'])[['id']].count().reset_index()
-        data = filtered_df[
-            (filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
-    else:
-        filtered_df = df.groupby(['city', 'market'])[['id']].count().reset_index()
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        filtered_df = df.groupby(['market','city']).agg({'id': pd.Series.count}).reset_index()
         data = filtered_df[(filtered_df['city'] == w_city)]
+    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['market', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['market'] == w_market)]
+    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['market','city', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['market','city']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['market'] == w_market)]
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+        filtered_df = df.groupby(['market', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
+    else:
+        filtered_df = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
 
     ind = data.index
     colors = ['green']
@@ -289,85 +310,121 @@ def update_graph_two(w_city, w_kind_of_investment):
         )
     }
 
+@app.callback(Output('line_chart', 'figure'),
+              Input('w_city', 'value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value'))
+def update_graph(w_city, w_kind_of_investment, w_market):
+    df = connection()
+    df['market'].fillna('nieznany', inplace=True)
+    df['date_addition_add'] = (pd.to_datetime(df['date_addition_add'], format='%Y-%m').dt.strftime('%Y-%B'))
+    if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        offert = df.groupby(['date_addition_add'], as_index=False).agg({'id':pd.Series.count}).sort_values('date_addition_add')
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        filtered_df = df.groupby(['date_addition_add', 'city']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['city'] == w_city)]
+        print(offert)
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['date_addition_add', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['city'] == w_kind_of_investment)]
+    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['date_addition_add', 'market']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['market'] == w_market)]
+    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['date_addition_add','city', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+        filtered_df = df.groupby(['date_addition_add', 'kind_of_investment', 'market']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['date_addition_add', 'city', 'market']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['market'] == w_market)]
+    else:
+        filtered_df = df.groupby(['date_addition_add', 'city', 'kind_of_investment', 'market']).agg({'id': pd.Series.count}).reset_index()
+        offert = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
+
+    return {
+        'data': [go.Bar(
+            x=offert['date_addition_add'],
+            y=offert['id'],
+            name='Monthly Add',
+            marker=dict(color='orange'),
+            hoverinfo='text',
+
+            # hovertext=
+            # '<b>Date</b>: ' + covid_data_3['date'].tail(30).astype(str) + '<br>' +
+            # '<b>Daily Confirmed Cases</b>: ' + [f'{x:,.0f}' for x in covid_data_3['daily confirmed'].tail(30)] + '<br>' +
+            # '<b>Country</b>: ' + covid_data_3['Country/Region'].tail(30).astype(str) + '<br>'
+
+
+        ),
+            # go.Scatter(
+            #     x=covid_data_3['date'].tail(30),
+            #     y=covid_data_3['Rolling Ave.'].tail(30),
+            #     mode='lines',
+            #     name='Rolling Average of the last 7 days - daily confirmed cases',
+            #     line=dict(width=3, color='#FF00FF'),
+            #     hoverinfo='text',
+            #     hovertext=
+            #     '<b>Date</b>: ' + covid_data_3['date'].tail(30).astype(str) + '<br>' +
+            #     '<b>Daily Confirmed Cases</b>: ' + [f'{x:,.0f}' for x in covid_data_3['Rolling Ave.'].tail(30)] + '<br>'
+            #
+            #
+            # )
+        ],
+
+        'layout': go.Layout(
+            title={'text': 'When advertisements were add: ' + (w_city),
+                   'y': 0.93,
+                   'x': 0.5,
+                   'xanchor': 'center',
+                   'yanchor': 'top'},
+            titlefont={'color': 'white',
+                       'size': 20},
+            font=dict(family='sans-serif',
+                      color='white',
+                      size=12),
+            hovermode='closest',
+            paper_bgcolor='#1f2c56',
+            plot_bgcolor='#1f2c56',
+            legend={'orientation': 'h',
+                    'bgcolor': '#1f2c56',
+                    'xanchor': 'center', 'x': 0.5, 'y': -0.7},
+            margin=dict(r=0),
+            xaxis=dict(title='<b>Date</b>',
+                       color = 'white',
+                       showline=True,
+                       showgrid=True,
+                       showticklabels=True,
+                       linecolor='white',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Aerial',
+                           color='white',
+                           size=14
+                       )),
+            yaxis=dict(title='<b>Number of offers</b>',
+                       color='white',
+                       showline=True,
+                       showgrid=True,
+                       showticklabels=True,
+                       linecolor='white',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Aerial',
+                           color='white',
+                           size=14
+                       )
+                       )
+
+
+        )
+    }
+
 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-
-
-
-
-# if __name__ == '__main__':
-#     app.run_server(debug=True)
-
-
-# '''1.How many offers per a city'''
-# flats_per_city = df.groupby(['city'], as_index=False).agg({'id':pd.Series.count}).sort_values('id', ascending=False)
-#
-# '''2. What is average per 1m2 in city'''
-# price_per_1m2 = (df.price // df.area).apply(np.ceil)
-# df.insert(5,'price_per_1m2', price_per_1m2)
-#
-# '''3. Average price per 1m2'''
-# city_average_price_per_1m = (df.groupby(['city']).agg({'price_per_1m2': pd.Series.mean})).round(0).sort_values(by='price_per_1m2', ascending=False)
-# city_average_price_per_1m=city_average_price_per_1m.sort_values(by='price_per_1m2', ascending=False)
-#
-# fig = px.bar(city_average_price_per_1m,
-#              x=city_average_price_per_1m.index,
-#              y=city_average_price_per_1m.price_per_1m2,
-#              color=city_average_price_per_1m.price_per_1m2,
-#              color_continuous_scale='Emrld')
-# fig.update_layout(title={
-#     'text': "Average price for 1m2",
-#     'y': 0.95,
-#     'x': 0.5,
-#     'xanchor': 'center',
-#     'yanchor': 'top'},
-#     xaxis_title="City",
-#     yaxis_title="price",
-#     legend_title=" ",
-#     font=dict(
-#         family="Courier New, monospace",
-#         size=14,
-#         color="black"
-#     ))
-#
-# fig.show()
-#
-# '''4. Area ranges per city and count their number'''
-# df.insert(6, 'mean_area','Unkown')
-# df.mean_area = ['<39' if i < 39 else '40-59' if i < 60 else '60-79' if i <80 else '>79' for i in df.area]
-# area_range = df.groupby(['city', 'mean_area',],as_index=False).agg({'area': pd.Series.count}).sort_values(by=['area','city'], ascending=False)
-#
-# fig = px.pie(area_range, values=area_range.area, names=area_range.mean_area, hole=.5)
-# fig.show()
-#
-# '''5 Count offert per primary and secondary market'''
-# market_kind = df.groupby(['city', 'market'],as_index=False).agg({'area': pd.Series.count}).sort_values(by=['area','city'], ascending=False)
-#
-# fig = px.pie(market_kind, values=market_kind.area, names=market_kind.market, hole=.5)
-#
-# fig.update_traces(textinfo='percent + label')
-# fig.show()
-
-# app = Dash(__name__)
-#
-# fig = px.bar(x=city_average_price_per_1m.index,
-#              y=city_average_price_per_1m.price_per_1m2,
-#              color=city_average_price_per_1m.index)
-#
-# app.layout = html.Div(children=[html.H1(children='Hello Dash'),
-#                                 html.Div(children='''
-#                                 Dash: A web application'''),
-#
-#                                 dcc.Graph(
-#                                     id='example-graph',
-#                                     figure=fig
-#                                 )])
-#
-# if __name__ == '__main__':
-#     app.run_server(debug=True)
-
 
