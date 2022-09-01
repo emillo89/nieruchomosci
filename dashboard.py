@@ -151,27 +151,33 @@ app.layout = html.Div(children=[
                                     for c in market], className='dcc_compon'
                          )
 
-        ], className='create_container three columns'),
+        ], className='create_container two columns'),
 
         html.Div([
             dcc.Graph(id ='pie_chart', config={'displayModeBar': 'hover'}
                       )
 
-        ], className='create_container four columns'),
+        ], className='create_container five columns'),
 
         html.Div([
             dcc.Graph(id ='pie_chart_two', config={'displayModeBar': 'hover'}
                       )
 
-        ], className='create_container four columns'),
+        ], className='create_container five columns'),
 
     ], className='row flex-display'),
 
     html.Div([
         html.Div([
-            dcc.Graph(id = 'line_chart', config={'displayModeBar': 'hover'}
+            dcc.Graph(id = 'bar_chart', config={'displayModeBar': 'hover'}
                       )
         ], className='create_container six columns'),
+
+    html.Div([
+        dcc.Graph(id = 'line_chart',
+                  config = {'displayModeBar': False},
+                  className = 'line_chart_size')
+    ], className = 'create_container six columns')
 
     ], className='row flex-display')
 
@@ -226,7 +232,7 @@ def update_graph(w_city, w_kind_of_investment):
                    'xanchor': 'center',
                    'yanchor': 'top'},
             titlefont={'color': 'white',
-                       'size': 20},
+                       'size': 18},
             font=dict(family='sans-serif',
                       color='white',
                       size=18),
@@ -246,6 +252,7 @@ def update_graph(w_city, w_kind_of_investment):
               Input('w_market','value'))
 def update_graph_two(w_city, w_kind_of_investment, w_market):
     df = connection()
+    # df = df.query_connection()
     df['market'].fillna('nieznany', inplace=True)
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         filtered_df = df.groupby('market').agg({'id': pd.Series.count}).reset_index()
@@ -296,7 +303,7 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
                    'xanchor': 'center',
                    'yanchor': 'top'},
             titlefont={'color': 'white',
-                       'size': 20},
+                       'size': 18},
             font=dict(family='sans-serif',
                       color='white',
                       size=18),
@@ -310,12 +317,13 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
         )
     }
 
-@app.callback(Output('line_chart', 'figure'),
+@app.callback(Output('bar_chart', 'figure'),
               Input('w_city', 'value'),
               Input('w_kind_of_investment', 'value'),
               Input('w_market', 'value'))
 def update_graph(w_city, w_kind_of_investment, w_market):
     df = connection()
+    # df = df.query_connection()
     df['market'].fillna('nieznany', inplace=True)
     df['date_addition_add'] = (pd.to_datetime(df['date_addition_add'], format='%Y-%m').dt.strftime('%Y-%B'))
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
@@ -358,19 +366,6 @@ def update_graph(w_city, w_kind_of_investment, w_market):
 
 
         ),
-            # go.Scatter(
-            #     x=covid_data_3['date'].tail(30),
-            #     y=covid_data_3['Rolling Ave.'].tail(30),
-            #     mode='lines',
-            #     name='Rolling Average of the last 7 days - daily confirmed cases',
-            #     line=dict(width=3, color='#FF00FF'),
-            #     hoverinfo='text',
-            #     hovertext=
-            #     '<b>Date</b>: ' + covid_data_3['date'].tail(30).astype(str) + '<br>' +
-            #     '<b>Daily Confirmed Cases</b>: ' + [f'{x:,.0f}' for x in covid_data_3['Rolling Ave.'].tail(30)] + '<br>'
-            #
-            #
-            # )
         ],
 
         'layout': go.Layout(
@@ -380,10 +375,10 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                    'xanchor': 'center',
                    'yanchor': 'top'},
             titlefont={'color': 'white',
-                       'size': 20},
+                       'size': 18},
             font=dict(family='sans-serif',
                       color='white',
-                      size=12),
+                      size=18),
             hovermode='closest',
             paper_bgcolor='#1f2c56',
             plot_bgcolor='#1f2c56',
@@ -391,7 +386,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                     'bgcolor': '#1f2c56',
                     'xanchor': 'center', 'x': 0.5, 'y': -0.7},
             margin=dict(r=0),
-            xaxis=dict(title='<b>Date</b>',
+            xaxis=dict(title='Date',
                        color = 'white',
                        showline=True,
                        showgrid=True,
@@ -404,7 +399,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                            color='white',
                            size=14
                        )),
-            yaxis=dict(title='<b>Number of offers</b>',
+            yaxis=dict(title='Number of offers',
                        color='white',
                        showline=True,
                        showgrid=True,
@@ -418,8 +413,116 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                            size=14
                        )
                        )
+        )
+    }
+
+@app.callback(Output('line_chart', 'figure'),
+              Input('w_city', 'value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value'))
+def update_graph(w_city, w_kind_of_investment, w_market):
+    df = connection()
+    price_per_1m2 = (df['price'] // df['area']).apply(np.ceil)
+    df.insert(6, 'price_per_1m2', price_per_1m2)
 
 
+
+    df['price_per_1m2'].fillna('nieznany', inplace=True)
+    df['date_addition_add'] = (pd.to_datetime(df['date_addition_add'], format='%Y-%m').dt.strftime('%Y-%B'))
+    if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        data = df.groupby(['date_addition_add'], as_index=False).agg({'price_per_1m2': pd.Series.mean})
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['date_addition_add', 'kind_of_investment']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        filtered_df = df.groupby(['date_addition_add', 'city']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city)]
+    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['date_addition_add', 'market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[(filtered_df['market'] == w_market)]
+    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['date_addition_add', 'city', 'kind_of_investment']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['date_addition_add', 'city', 'market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['market'] == w_market)]
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+        filtered_df = df.groupby(['date_addition_add', 'kind_of_investment', 'w_market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[
+            (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
+    else:
+        filtered_df = df.groupby(['date_addition_add', 'city', 'kind_of_investment', 'market']).agg(
+            {'price_per_1m2': pd.Series.mean}).reset_index()
+        data = filtered_df[
+            (filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment) & (
+                        filtered_df['market'] == w_market)]
+    text_color = np.where(data['price_per_1m2'] > 0, 'white', '#FF3399')
+
+    return {
+        'data': [
+            go.Scatter(
+                x = data['date_addition_add'],
+                y = data['price_per_1m2'],
+                text = data['price_per_1m2'],
+                texttemplate = '' + '%{text:,.0f}',
+                textposition = 'top center',
+                textfont = dict(
+                    family = "Calibri",
+                    size = 18,
+                    color = text_color,
+                ),
+                mode = 'markers+lines+text',
+                line = dict(shape = "spline", smoothing = 1.3, width = 3, color = '#B258D3'),
+                marker = dict(size = 10, symbol = 'circle', color = 'white',
+                              line = dict(color = '#00B0F0', width = 2)
+                              ),
+
+                hoverinfo = 'text',
+                # hovertext =
+                # '<b>Month</b>: ' + months.astype(str) + '<br>' +
+                # '<b>Net Profit</b>: $' + [f'{x:,.0f}' for x in net_profit] + '<br>'
+            )],
+
+        'layout': go.Layout(
+            plot_bgcolor = 'rgba(0,0,0,0)',
+            paper_bgcolor = 'rgba(0,0,0,0)',
+            titlefont={'color': 'white',
+                       'size': 18},
+            font=dict(family='sans-serif',
+                      color='white',
+                      size=18),
+            margin = dict(r = 20, t = 20, b = 70, l = 90),
+            xaxis = dict(title = 'Date',
+                         visible = True,
+                         color = 'white',
+                         showline = False,
+                         showgrid = False,
+                         showticklabels = True,
+                         linecolor = 'white',
+                         linewidth = 1,
+                         ticks = 'outside',
+                         tickfont = dict(
+                             family = 'Aerial',
+                             size = 14,
+                             color = 'white')
+                         ),
+
+            yaxis = dict(title = 'Price for 1m2',
+                         tickprefix = ' ',
+                         tickformat = ',.0f',
+                         visible = True,
+                         color = 'white',
+                         showline = False,
+                         showgrid = False,
+                         showticklabels = True,
+                         linecolor = 'white',
+                         linewidth = 1,
+                         ticks = 'outside',
+                         tickfont = dict(
+                             family = 'Aerial',
+                             size = 14,
+                             color = 'white')
+                         ),
         )
     }
 

@@ -1,5 +1,6 @@
 from connect_with_database import DatabaseConnect
 import pandas as pd
+import numpy as np
 
 
 class ReadData:
@@ -47,4 +48,11 @@ class ReadData:
 
     def fillna(self, value, column):
         self.df[column].fillna(value, inplace=True)
+
+    def price_per_m2(self):
+        price = (self.df['price'] // self.df['area']).apply(np.ceil)
+        return price
+
+    def insert_column(self, index_place, name_new_column, new_column):
+        self.df.insert(index_place, name_new_column, new_column)
 
