@@ -561,24 +561,28 @@ def update_graph(w_city, w_kind_of_investment, w_market):
 def update_graph(w_city):
     df = add_column_lat_long(lat_and_long)
 
-    if w_city:
+    if w_city == 'All':
+        geography = df.groupby(['city', 'lat', 'long'])[['id']].agg({'id': pd.Series.count}).reset_index()
+
+        zoom = 5
+        zoom_lat = float(52.229675)
+        zoom_long = float(21.012230)
+
+    elif w_city:
         geograp = df.groupby(['city','lat','long'])[[ 'id']].agg({'id': pd.Series.count}).reset_index()
         geography = geograp[geograp['city']==w_city]
         print(geography)
-# geography2 =
-# if w_city:
-        zoom=3
+        zoom=5
         zoom_lat = float(geography['lat'])
         zoom_long = float(geography['long'])
         print(f'{zoom_lat} - {zoom_long}asdadadad')
-# 'Warszawa': {'lat': '52.229675', 'long': '52.229675'},
 
     return {
         'data': [go.Scattermapbox(
             lon=geography['long'],
             lat=geography['lat'],
             mode='markers',
-            marker=go.scattermapbox.Marker(size=geography['id'],
+            marker=go.scattermapbox.Marker(size=geography['id'] * 10,
                                            color=geography['id'],
                                            colorscale='HSV',
                                            showscale=False,
@@ -609,7 +613,7 @@ def update_graph(w_city):
                 center = go.layout.mapbox.Center(lat=zoom_lat, lon=zoom_long),
                 style='dark',
                 # style='open-street-map',
-                zoom=3,
+                zoom=zoom,
             ),
 
 
