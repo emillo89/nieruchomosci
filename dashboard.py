@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from connect_with_database import DatabaseConnect
 from readDatabase import ReadData
-
+from geography_lat_long import lat_and_long
 
 
 df = ReadData('offert.db')
@@ -179,6 +179,14 @@ app.layout = html.Div(children=[
                   className = 'line_chart_size')
     ], className = 'create_container six columns')
 
+    ], className='row flex-display'),
+
+    html.Div([
+        html.Div([
+            dcc.Graph(id='map_chart', config={'displayModeBar': 'hover'}
+                      )
+        ], className='create_container1 twelve columns')
+
     ], className='row flex-display')
 
     ], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'})
@@ -188,6 +196,26 @@ def connection():
     data_reader = ReadData('offert.db')
     df = data_reader.query_connection()
     return df
+
+def inny():
+    df = ReadData('offert.db')
+    con = df.query_connection()
+    return df.df
+
+# print('-----')
+# print(inny())
+
+def add_column_lat_long(geography_lat_long):
+    df = connection()
+    cities = df['city'].unique()
+
+    for city in cities:
+        if city in geography_lat_long:
+            df.loc[df['city'] == city, 'lat'] = geography_lat_long[city]['lat']
+            df.loc[df['city'] == city, 'long'] = geography_lat_long[city]['long']
+    print(df)
+    return df
+
 
 @app.callback(Output('pie_chart', 'figure'),
               Input('w_city','value'),
@@ -427,6 +455,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
 
 
 
+
     df['price_per_1m2'].fillna('nieznany', inplace=True)
     df['date_addition_add'] = (pd.to_datetime(df['date_addition_add'], format='%Y-%m').dt.strftime('%Y-%B'))
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
@@ -523,6 +552,68 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                              size = 14,
                              color = 'white')
                          ),
+        )
+    }
+
+
+@app.callback(Output('map_chart', 'figure'),
+              Input('w_city', 'value'))
+def update_graph(w_city):
+    df = add_column_lat_long(lat_and_long)
+
+    if w_city:
+        geograp = df.groupby(['city','lat','long'])[[ 'id']].agg({'id': pd.Series.count}).reset_index()
+        geography = geograp[geograp['city']==w_city]
+        print(geography)
+# geography2 =
+# if w_city:
+        zoom=3
+        zoom_lat = float(geography['lat'])
+        zoom_long = float(geography['long'])
+        print(f'{zoom_lat} - {zoom_long}asdadadad')
+# 'Warszawa': {'lat': '52.229675', 'long': '52.229675'},
+
+    return {
+        'data': [go.Scattermapbox(
+            lon=geography['long'],
+            lat=geography['lat'],
+            mode='markers',
+            marker=go.scattermapbox.Marker(size=geography['id'],
+                                           color=geography['id'],
+                                           colorscale='HSV',
+                                           showscale=False,
+                                           sizemode='area',
+                                           opacity=0.3),
+            hoverinfo='text',
+            # hoverinfo='text',
+            # hovertext=
+            # '<b>Region</b>: ' + terr9['region_txt'].astype(str) + '<br>' +
+            # '<b>Country</b>: ' + terr9['country_txt'].astype(str) + '<br>' +
+            # '<b>Province/State</b>: ' + terr9['provstate'].astype(str) + '<br>' +
+            # '<b>City</b>: ' + terr9['city'].astype(str) + '<br>' +
+            # '<b>Year</b>: ' + terr9['iyear'].astype(str) + '<br>' +
+            # '<b>Death</b>: ' + [f'{x:,.0f}' for x in terr9['nkill']] + '<br>' +
+            # '<b>Injured</b>: ' + [f'{x:,.0f}' for x in terr9['nwound']] + '<br>' +
+            # '<b>Attack</b>: ' + [f'{x:,.0f}' for x in terr9['attacktype1']] + '<br>'
+
+
+        )],
+
+        'layout': go.Layout(
+            hovermode='x',
+            paper_bgcolor='#010915',
+            plot_bgcolor='#010915',
+            margin=dict(r=0, l =0, b = 0, t = 0),
+            mapbox=dict(
+                accesstoken='pk.eyJ1IjoiZW1pbGxvODkiLCJhIjoiY2w3bnNjN2cyMG83eDN1bzB2OHB6NGh2OSJ9.FoBvs_PL6PdhytI3OGE2DA',
+                center = go.layout.mapbox.Center(lat=zoom_lat, lon=zoom_long),
+                style='dark',
+                # style='open-street-map',
+                zoom=3,
+            ),
+
+
+
         )
     }
 

@@ -4,6 +4,8 @@ from webscrapping_main_page import WebScrappingMainPage
 from models_flat import Session
 
 
+
+
 session = Session()
 
 def add_link_to_file(link):
@@ -82,6 +84,7 @@ def parse_page(page: int):
                 state_of_the_building_finish, advertiser_add, elevator, equipment, security = site.show_details(soup)
                 if city == None and own == None and area == None:
                     continue
+
                 nr_offert = site.get_nr_offert(soup)
                 date_addition_add = site.get_date_addition(soup)
                 date_actualisation_add = site.get_date_actualisation(soup)
