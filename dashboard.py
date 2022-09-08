@@ -8,12 +8,16 @@ from connect_with_database import DatabaseConnect
 from readDatabase import ReadData
 from geography_lat_long import lat_and_long
 
-
+# data_preparator = DataPreparator()
+# data_preparator.prepare_data()
+ ########
 df = ReadData('offert.db')
 con = df.query_connection()
 
-'''1. How many add in database'''
+'''1.1 How many add in database'''
 total_count = df.count_totat_add()
+'''1.2 Average per 1m2'''
+price_average = df.price_per_m2()
 
 '''2. Kind of investments'''
 houses = df.count_houses()
@@ -43,7 +47,7 @@ app.layout = html.Div(children=[
         html.Div(children=[
             html.Img(src=app.get_asset_url('analytics.png'),
                      id='logo-image',
-                     style={'height': '60px',
+                     style={'height': '100px',
                             'width': 'auto',
                             'margin-bottom': '25px'}
 
@@ -64,7 +68,8 @@ app.layout = html.Div(children=[
            html.Div(children=[
                 html.H6(children='Total add',
                         style={'textAlign': 'center',
-                               'color': 'white'
+                               'color': 'white',
+                               'fontSize' : 20
                                }),
                 html.P(f'{total_count}',
                         style={'textAlign': 'center',
@@ -78,41 +83,44 @@ app.layout = html.Div(children=[
                         style={'textAlign': 'center',
                                'color': 'orange',
                                'fontSize': 15}),
-           ], className='card_container three columns'),
+           ], className='card_container three column'),
 
     html.Div(children=[
                 html.H6(children='....',
                         style={'textAlign': 'center',
-                               'color': 'white'
+                               'color': 'white',
+                               'fontSize' : 20
                                }),
                 html.P(f'{total_count}',
                         style={'textAlign': 'center',
                                'color': '#dd1e35',
                                'fontSize': 40}),
-           ], className='card_container three columns'),
+           ], className='card_container three column'),
 
 
     html.Div(children=[
                 html.H6(children='....',
                         style={'textAlign': 'center',
-                               'color': 'white'
+                               'color': 'white',
+                               'fontSize' : 20
                                }),
                 html.P(f'{total_count}',
                         style={'textAlign': 'center',
                                'color': 'green',
                                'fontSize': 40}),
-           ], className='card_container three columns'),
+           ], className='card_container three column'),
 
     html.Div(children=[
                 html.H6(children='....',
                         style={'textAlign': 'center',
-                               'color': 'white'
+                               'color': 'white',
+                               'fontSize' : 20
                                }),
                 html.P(f'{total_count}',
                         style={'textAlign': 'center',
                                'color': '#e55467',
                                'fontSize': 40}),
-           ], className='card_container three columns')
+           ], className='card_container three column')
 
     ], className='row flex-display'),
 
@@ -171,13 +179,13 @@ app.layout = html.Div(children=[
         html.Div([
             dcc.Graph(id = 'bar_chart', config={'displayModeBar': 'hover'}
                       )
-        ], className='create_container six columns'),
+        ], className='create_container six column'),
 
-    html.Div([
-        dcc.Graph(id = 'line_chart',
-                  config = {'displayModeBar': False},
-                  className = 'line_chart_size')
-    ], className = 'create_container six columns')
+        html.Div([
+            dcc.Graph(id = 'line_chart',
+                      config = {'displayModeBar': False},
+                      className = 'line_chart_size')
+        ], className = 'create_container six column')
 
     ], className='row flex-display'),
 
@@ -185,7 +193,7 @@ app.layout = html.Div(children=[
         html.Div([
             dcc.Graph(id='map_chart', config={'displayModeBar': 'hover'}
                       )
-        ], className='create_container1 twelve columns')
+        ], className='create_container1 twelve column')
 
     ], className='row flex-display')
 
@@ -219,23 +227,55 @@ def add_column_lat_long(geography_lat_long):
 
 @app.callback(Output('pie_chart', 'figure'),
               Input('w_city','value'),
-              Input('w_kind_of_investment','value')
+              Input('w_kind_of_investment','value'),
+              Input('w_market','value')
               )
-def update_graph(w_city, w_kind_of_investment):
+def update_graph(w_city, w_kind_of_investment, w_market):
     df = connection()
-    if w_city == 'All' and w_kind_of_investment == 'All':
+    # if w_city == 'All' and w_kind_of_investment == 'All':
+    #     filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
+    #     data = filtered_df
+    # elif w_city == 'All' and w_kind_of_investment != 'All':
+    #     filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
+    #     data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    #     print(data)
+    # elif w_city != 'All' and w_kind_of_investment != 'All':
+    #     filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
+    #     data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    # else:
+    #     filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
+    #     data = filtered_df[(filtered_df['city'] == w_city)]
+
+    df['market'].fillna('nieznany', inplace=True)
+    if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
         data = filtered_df
-    elif w_city == 'All' and w_kind_of_investment != 'All':
-        filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['market', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
         data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
         print(data)
-    elif w_city != 'All' and w_kind_of_investment != 'All':
-        filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
-        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
-    else:
-        filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        filtered_df = df.groupby(['kind_of_investment', 'city']).agg({'id': pd.Series.count}).reset_index()
         data = filtered_df[(filtered_df['city'] == w_city)]
+    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['market', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['market'] == w_market)]
+    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        filtered_df = df.groupby(['city', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[
+            (filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        filtered_df = df.groupby(['kind_of_investment', 'city', 'market']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['market'] == w_market)]
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+        filtered_df = df.groupby(['market', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
+        data = filtered_df[
+            (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
+    else:
+        filtered_df = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
+        data = filtered_df[
+            (filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment) & (
+                        filtered_df['market'] == w_market)]
 
     ind = data.index
     colors = [ '#dd1e35', '#778899']
@@ -307,6 +347,14 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
     else:
         filtered_df = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
         data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
+
+    # filtered_df = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
+    # if w_city != 'All':
+    #     data = filtered_df[(filtered_df['city'] == w_city)]
+    # if w_kind_of_investment != 'All':
+    #     data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
+    # if w_market != 'All':
+    #     data = filtered_df[(filtered_df['market'] == w_market)]
 
     ind = data.index
     colors = ['green']
@@ -557,25 +605,94 @@ def update_graph(w_city, w_kind_of_investment, w_market):
 
 
 @app.callback(Output('map_chart', 'figure'),
-              Input('w_city', 'value'))
-def update_graph(w_city):
+              Input('w_city', 'value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value'))
+def update_graph(w_city, w_kind_of_investment, w_market):
     df = add_column_lat_long(lat_and_long)
+    geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
+        {'id': pd.Series.count}).reset_index()
+    if w_city != 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+        geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market) & (
+                geograp['kind_of_investment'] == w_kind_of_investment)]
 
-    if w_city == 'All':
-        geography = df.groupby(['city', 'lat', 'long'])[['id']].agg({'id': pd.Series.count}).reset_index()
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        geography = geograp[geograp['city']==w_city]
+    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market)]
+    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+        geography = geograp[(geograp['market'] == w_market)]
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+        geography = geograp[(geograp['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+        geography = geograp[(geograp['market'] == w_market) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All' :
+        geography = df.groupby(['city', 'lat', 'long'])[['id']].agg(
+        {'id': pd.Series.count}).reset_index()
 
-        zoom = 5
+
+    if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         zoom_lat = float(52.229675)
         zoom_long = float(21.012230)
-
-    elif w_city:
-        geograp = df.groupby(['city','lat','long'])[[ 'id']].agg({'id': pd.Series.count}).reset_index()
-        geography = geograp[geograp['city']==w_city]
-        print(geography)
+        zoom = 5
+    else:
         zoom=5
         zoom_lat = float(geography['lat'])
         zoom_long = float(geography['long'])
         print(f'{zoom_lat} - {zoom_long}asdadadad')
+
+
+
+
+    # if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All' :
+    #     geography = df.groupby(['city', 'lat', 'long'])[['id']].agg({'id': pd.Series.count}).reset_index()
+    #     # zoom = 5
+    #     # zoom_lat = float(52.229675)
+    #     # zoom_long = float(21.012230)
+    # elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+    #     geograp = df.groupby(['city','lat','long'])[[ 'id']].agg({'id': pd.Series.count}).reset_index()
+    #     geography = geograp[geograp['city']==w_city]
+    # elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+    #     geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg({'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    # elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+    #     geograp = df.groupby(['city', 'market', 'lat', 'long'])[['id']].agg(
+    #         {'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market)]
+    # elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+    #     geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg(
+    #         {'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    # elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+    #     geograp = df.groupby(['city', 'market', 'lat', 'long'])[['id']].agg(
+    #         {'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['market'] == w_market)]
+    # elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+    #     geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg(
+    #         {'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['kind_of_investment'] == w_kind_of_investment)]
+    # elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+    #     geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
+    #         {'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['market'] == w_market) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    # else:
+    #     geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
+    #         {'id': pd.Series.count}).reset_index()
+    #     geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market) & (geograp['kind_of_investment'] == w_kind_of_investment)]
+    #
+    # if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+    #     zoom_lat = float(52.229675)
+    #     zoom_long = float(21.012230)
+    #     zoom = 5
+    # else:
+    #     zoom=5
+    #     zoom_lat = float(geography['lat'])
+    #     zoom_long = float(geography['long'])
+    #     print(f'{zoom_lat} - {zoom_long}asdadadad')
 
     return {
         'data': [go.Scattermapbox(
