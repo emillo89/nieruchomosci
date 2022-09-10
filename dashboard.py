@@ -410,7 +410,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
         print(offert)
     elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
         filtered_df = df.groupby(['date_addition_add', 'kind_of_investment']).agg({'id': pd.Series.count}).reset_index()
-        offert = filtered_df[(filtered_df['city'] == w_kind_of_investment)]
+        offert = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
     elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
         filtered_df = df.groupby(['date_addition_add', 'market']).agg({'id': pd.Series.count}).reset_index()
         offert = filtered_df[(filtered_df['market'] == w_market)]
@@ -524,7 +524,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
         filtered_df = df.groupby(['date_addition_add', 'city', 'market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
         data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['market'] == w_market)]
     elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-        filtered_df = df.groupby(['date_addition_add', 'kind_of_investment', 'w_market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+        filtered_df = df.groupby(['date_addition_add', 'kind_of_investment', 'market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
         data = filtered_df[
             (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
     else:
@@ -610,40 +610,44 @@ def update_graph(w_city, w_kind_of_investment, w_market):
               Input('w_market', 'value'))
 def update_graph(w_city, w_kind_of_investment, w_market):
     df = add_column_lat_long(lat_and_long)
-    geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
-        {'id': pd.Series.count}).reset_index()
-    if w_city != 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-        geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market) & (
-                geograp['kind_of_investment'] == w_kind_of_investment)]
-
-    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
-        geography = geograp[geograp['city']==w_city]
-    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-        geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-        geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market)]
-    elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-        geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-        geography = geograp[(geograp['market'] == w_market)]
-    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-        geography = geograp[(geograp['kind_of_investment'] == w_kind_of_investment)]
-    elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-        geography = geograp[(geograp['market'] == w_market) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    elif w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All' :
-        geography = df.groupby(['city', 'lat', 'long'])[['id']].agg(
-        {'id': pd.Series.count}).reset_index()
-
 
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
-        zoom_lat = float(52.229675)
-        zoom_long = float(21.012230)
-        zoom = 5
+        geography = df.groupby(['city', 'lat', 'long'])[['id']].agg(
+            {'id': pd.Series.count}).reset_index()
     else:
-        zoom=5
-        zoom_lat = float(geography['lat'])
-        zoom_long = float(geography['long'])
-        print(f'{zoom_lat} - {zoom_long}asdadadad')
+        if w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+            geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[geograp['kind_of_investment'] == w_kind_of_investment]
+        elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+            geograp = df.groupby(['city', 'market', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[geograp['market'] == w_market]
+        elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+            geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[(geograp['kind_of_investment'] == w_kind_of_investment) & (geograp['market'] == w_market)]
+        elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+            geograp = df.groupby(['city', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[(geograp['city'] == w_city)]
+        elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+            geograp = df.groupby(['city', 'market', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[(geograp['market'] == w_market) & (geograp['city'] == w_city)]
+        elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+            geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[(geograp['kind_of_investment'] == w_kind_of_investment) & (geograp['city'] == w_city)]
+        else:
+            geograp = df.groupby(['city', 'kind_of_investment','market', 'lat', 'long'])[['id']].agg(
+                {'id': pd.Series.count}).reset_index()
+            geography = geograp.loc[
+                (geograp['kind_of_investment'] == w_kind_of_investment) & (geograp['city'] == w_city) & (geograp['market'] == w_market)]
+    zoom_lat = float(52.229675)
+    zoom_long = float(21.012230)
+    zoom = 5
+    print(f'{zoom_lat} - {zoom_long}asdadadad')
 
 
 
