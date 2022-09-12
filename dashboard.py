@@ -65,62 +65,66 @@ app.layout = html.Div(children=[
     ], id='header', className='row flex-display', style={'margin-buttom': '25px'}),
 
     html.Div(children=[
-           html.Div(children=[
-                html.H6(children='Total add',
-                        style={'textAlign': 'center',
-                               'color': 'white',
-                               'fontSize' : 20
-                               }),
-                html.P(f'{total_count}',
-                        style={'textAlign': 'center',
-                               'color': 'orange',
-                               'fontSize': 40}),
-                html.P(f'Houses: {houses}',
-                        style={'textAlign': 'center',
-                               'color': 'orange',
-                               'fontSize': 15}),
-                html.P(f'Flats: {flats}',
-                        style={'textAlign': 'center',
-                               'color': 'orange',
-                               'fontSize': 15}),
+           # html.Div(children=[
+           #      html.H6(children='Total add',
+           #              style={'textAlign': 'center',
+           #                     'color': 'white',
+           #                     'fontSize' : 20
+           #                     }),
+           #      html.Img(src=app.get_asset_url('calculator.png'),
+           #             style={'height': '40px','marginTop': 20, 'textAlign': 'center'},
+           #             className='count_add'),
+           #      html.P(f'{total_count}',
+           #              style={'textAlign': 'center',
+           #                     'color': 'white',
+           #                     'fontSize': 20,
+           #                     'font-weight': 'bold'}),
+           #      html.P(f'Houses: {houses}',
+           #              style={'textAlign': 'center',
+           #                     'color': 'orange',
+           #                     'fontSize': 15}),
+           #      html.P(f'Flats: {flats}',
+           #              style={'textAlign': 'center',
+           #                     'color': 'orange',
+           #                     'fontSize': 15}),
+           # ], className='card_container three column'),
+
+        html.Div([
+            html.H6(children='Total add',
+                    style={'textAlign': 'center',
+                           'color': 'white',
+                           'fontSize': 20
+                           }),
+            html.Img(src=app.get_asset_url('calculator.png'),
+                     style={'height': '40px', 'marginTop': 20},
+                     className='calculator'),
+
+            html.H6(f'{total_count}',
+                    style={'color': 'white',
+                           'font-weight': 'bold',
+                           'fontSize': 20,
+                           'textAlign': 'center'
+                           },
+                    className='count_add')
+
+        ], className='card_container three column', style={'textAlign': 'center'}),
+
+
+    html.Div(children=[
+        html.Div(id='text_row2', style={'text-align': 'center'})
+
+           ], className='card_container three column'),
+
+
+    html.Div(children=[
+                html.Div(id='text_row3')
            ], className='card_container three column'),
 
     html.Div(children=[
-                html.H6(children='....',
-                        style={'textAlign': 'center',
-                               'color': 'white',
-                               'fontSize' : 20
-                               }),
-                html.P(f'{total_count}',
-                        style={'textAlign': 'center',
-                               'color': '#dd1e35',
-                               'fontSize': 40}),
+        html.H6(id='text_row4',
+                style={'color': 'white'},
+                className='adjust_date_time'),
            ], className='card_container three column'),
-
-
-    html.Div(children=[
-                html.H6(children='....',
-                        style={'textAlign': 'center',
-                               'color': 'white',
-                               'fontSize' : 20
-                               }),
-                html.P(f'{total_count}',
-                        style={'textAlign': 'center',
-                               'color': 'green',
-                               'fontSize': 40}),
-           ], className='card_container three column'),
-
-    html.Div(children=[
-                html.H6(children='....',
-                        style={'textAlign': 'center',
-                               'color': 'white',
-                               'fontSize' : 20
-                               }),
-                html.P(f'{total_count}',
-                        style={'textAlign': 'center',
-                               'color': '#e55467',
-                               'fontSize': 40}),
-           ], className='card_container three column')
 
     ], className='row flex-display'),
 
@@ -224,6 +228,177 @@ def add_column_lat_long(geography_lat_long):
     print(df)
     return df
 
+
+# @app.callback(Output('text_row1', 'children'),
+#               Input('w_city','value'),
+#               Input('w_kind_of_investment', 'value'),
+#               Input('w_market', 'value')
+#               )
+# def update_row1(w_city, w_kind_of_investment, w_market):
+#     df = connection()
+#     # total_count = df.count_totat_add()
+#     houses = df.count_houses()
+#     flats = df.count_flats()
+#     return [
+    #     html.Div([
+    #         html.H6(children= 'Total add',
+    #                 style={'textAlign': 'center',
+    #                        'color': 'white',
+    #                        'fontSize': 20
+    #                        }),
+    #         html.Img(src=app.get_asset_url('calculator.png'),
+    #                  style={'height': '40px', 'marginTop': 20},
+    #                  className='calculator'),
+    #
+    #         html.H6(f'{60}',
+    #                 style={'color': 'white',
+    #                        'font-weight': 'bold',
+    #                        'fontSize': 20,
+    #                        'textAlign': 'center'
+    #                        },
+    #                 className='count_add'),
+    #         html.P(f'Houses: {houses}',
+    #                style={'textAlign': 'center',
+    #                       'color': 'orange',
+    #                       'fontSize': 15}),
+    #         html.P(f'Flats: {flats}',
+    #                style={'textAlign': 'center',
+    #                       'color': 'orange',
+    #                       'fontSize': 15}),
+    #     ], className='add')
+    # ]
+@app.callback(Output('text_row2', 'children'),
+              Input('w_city','value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value')
+              )
+def update_row2(w_city, w_kind_of_investment, w_market):
+    df = connection()
+    price_per_1m2 = (df['price'] // df['area']).apply(np.ceil)
+    df.insert(6, 'price_per_1m2', price_per_1m2)
+    df['market'].fillna('nieznany', inplace=True)
+    df['kind_of_investment'].fillna('nieznany', inplace=True)
+
+
+
+    if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+        average = df.agg({'price_per_1m2': pd.Series.mean})['price_per_1m2']
+    else:
+        if w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+            filtered_df = df.groupby(['city']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+            ind = filtered_df.index[filtered_df['city'] == w_city][0]
+            average = filtered_df.iloc[ind]['price_per_1m2']
+        elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+            filtered_df = df.groupby(['kind_of_investment']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+            ind = filtered_df.index[filtered_df['kind_of_investment'] == w_kind_of_investment][0]
+            average = filtered_df.iloc[ind]['price_per_1m2']
+        elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+            filtered_df = df.groupby(['market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+            try:
+                ind = filtered_df.index[filtered_df['market'] == w_market][0]
+            except IndexError:
+                average = 0
+            else:
+                average = filtered_df.iloc[ind]['price_per_1m2']
+        elif w_city != 'All' and w_kind_of_investment !=   'All' and w_market == 'All':
+            filtered_df = df.groupby(['city', 'kind_of_investment']).agg(
+                {'price_per_1m2': pd.Series.mean}).reset_index()
+            ind = filtered_df.index[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)][0]
+            average = filtered_df.iloc[ind]['price_per_1m2']
+        elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+            filtered_df = df.groupby(['kind_of_investment', 'market']).agg(
+                {'price_per_1m2': pd.Series.mean}).reset_index()
+            try:
+                ind = filtered_df.index[
+                    (filtered_df['market'] == w_market) & (filtered_df['kind_of_investment'] == w_kind_of_investment)][0]
+            except IndexError:
+                average = 0
+            else:
+                average = filtered_df.iloc[ind]['price_per_1m2']
+        elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+            filtered_df = df.groupby(['city', 'market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
+            try:
+                ind = filtered_df.index[
+                    (filtered_df['market'] == w_market) & (filtered_df['city'] == w_city)][0]
+            except IndexError:
+                average = 0
+            else:
+                average = filtered_df.iloc[ind]['price_per_1m2']
+        elif w_city != 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+            filtered_df = df.groupby(['city', 'kind_of_investment', 'market']).agg(
+                {'price_per_1m2': pd.Series.mean}).reset_index()
+            try:
+                ind = filtered_df.index[(filtered_df['city'] == w_city) &
+                                        (filtered_df['kind_of_investment'] == w_kind_of_investment) &
+                                        (filtered_df['market'] == w_market)][0]
+            except IndexError:
+                average = 0
+            else:
+                average = filtered_df.iloc[ind]['price_per_1m2']
+
+
+    return [
+        html.Div([
+               html.H6(children='Average price [PLN]',
+                       style={'textAlign': 'center',
+                              'color': 'white',
+                              'fontSize': 20
+                              }),
+               html.Img(src=app.get_asset_url('price.png'),
+                       style={'height': '40px','marginTop': 20},
+                       className='price'),
+
+               html.H6('{0:,.0f}'.format(average),
+                    style={'color': 'white',
+                           'font-weight': 'bold',
+                           'fontSize': 20,
+                           'textAlign': 'center'
+                           },
+                    className='price'),
+           ],className = 'price')
+        ]
+
+
+@app.callback(Output('text_row3', 'children'),
+              Input('w_city','value'))
+def update_row1(w_city):
+    df = connection()
+    price_per_1m2 = (df['price'] // df['area']).apply(np.ceil)
+    df.insert(6, 'price_per_1m2', price_per_1m2)
+    average = df.agg({'price_per_1m2': pd.Series.mean})
+
+
+    return [
+        html.Div([
+            html.Div([
+                html.Div([
+                    html.Img(src=app.get_asset_url('price.png'),
+                             style={'height': '40px'},
+                             className='coin'),
+                    html.P('  Price average',
+                           style={'color': 'white',
+                                  'fontSize': 20,
+                                  'align': 'center'
+                                  },
+                           className='coin_name')
+                ], className='coin_image'),
+                html.P(w_city ,
+                       style={'color': 'white',
+                              'fontSize': 20},
+                       className='rank')
+            ], className='coin_rank'),
+            html.Div([
+                html.H6('{0:,.0f}'.format(average['price_per_1m2']),
+                        style={'color': 'white',
+                               'font-weight': 'bold',
+                               'fontSize' : 20,
+                               'textAlign': 'center'
+                               },
+                        className='price'),
+            ], className='adjust_price_and_right_value')
+        ], className='coin_price_column'),
+
+    ]
 
 @app.callback(Output('pie_chart', 'figure'),
               Input('w_city','value'),

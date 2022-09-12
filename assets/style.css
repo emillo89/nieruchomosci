@@ -102,6 +102,101 @@ font-size: 20px;
   color: white;
 }
 
+.adjust_card {
+  background-color: rgb(50, 53, 70);
+  width: 340px;
+  height: 115px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 1px 0px rgb(88, 102, 126);
+}
+
+.adjust_card:hover {
+  background-color: rgb(23, 25, 26);
+  box-shadow: 0px 0px 1px 0px #282b3e;
+}
+
+.card_column {
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+}
+
+.coin {
+  display: flex;
+  flex-direction: row;
+  margin-top: 6px;
+}
+
+.coin_name {
+  display: flex;
+  flex-direction: row;
+  margin: 10px;
+  margin-left: 100px;
+}
+
+.coin_image {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.rank {
+  display: flex;
+  flex-direction: row;
+  margin-top: 13px;
+  margin-right: 15px;
+}
+
+.coin_rank {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.coin_price {
+  display: flex;
+  flex-direction: row;
+}
+
+.price_indicator {
+  display: flex;
+  flex-direction: row;
+  margin-top: 14px;
+}
+
+.adjust_price_and_coin {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+}
+
+.right_price_value {
+  display: flex;
+  flex-direction: row;
+  margin-top: 14px;
+}
+.adjust_price_indicator_and_right_value {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  margin-top: -7px;
+}
+.adjust_price_and_right_value {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  margin-top: -1px;
+}
+
+.coin_price_column {
+  display: flex;
+  flex-direction: column;
+}
+
+.price_difference {
+  display: flex;
+  flex-direction: row;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 10px !important;
