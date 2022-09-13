@@ -197,6 +197,10 @@ font-size: 20px;
   display: flex;
   flex-direction: row;
 }
+
+.link {
+    text-decoration: none;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 10px !important;
