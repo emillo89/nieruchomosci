@@ -49,21 +49,19 @@ app.layout = html.Div(children=[
         html.Div(children=[
             html.Img(src=app.get_asset_url('analytics.png'),
                      id='logo-image',
-                     style={'height': '100px',
+                     style={'height': '70px',
                             'width': 'auto',
-                            'margin-bottom': '25px'}
+                            'margin-bottom': '25px',
+                            'margin-left': '5px'},
+                     className='title_image'
+                     ),
 
-                     )
-        ], className='one-third column'),
-
-        html.Div(children=[
-            html.Div([
-                html.H3('Data analysis flats and houses', style={'margin-bottom': '0px', 'color':'white'})
-
-            ])
-
-        ], className='one-half column', id='title'),
-
+        html.H3('Data analysis flats and houses',
+                style={'margin-bottom': '-5px',
+                       'margin-left': '5px',
+                       'color':'white'},
+                className='title')
+        ], className='logo_title'),
     ], id='header', className='row flex-display', style={'margin-buttom': '25px'}),
 
     html.Div(children=[
@@ -204,9 +202,6 @@ def inny():
     con = df.query_connection()
     return df.df
 
-# print('-----')
-# print(inny())
-
 def add_column_lat_long(geography_lat_long):
     df = connection()
     cities = df['city'].unique()
@@ -300,7 +295,7 @@ def update_row2(w_city, w_kind_of_investment, w_market):
                html.H6('{0:,.0f}'.format(average),
                     style={'color': 'white',
                            'font-weight': 'bold',
-                           'fontSize': 20,
+                           'fontSize': 18,
                            'textAlign': 'center'
                            },
                     className='price'),
@@ -319,7 +314,7 @@ def update_row3(w_city, w_kind_of_investment, w_market):
     df['market'].fillna('nieznany', inplace=True)
     df['kind_of_investment'].fillna('nieznany', inplace=True)
 
-    top3 = df.sort_values('price_per_1m2')[['id', 'kind_of_investment', 'city', 'area', 'price_per_1m2', 'price', 'link']]
+    top3 = df.sort_values('price_per_1m2')[['id', 'kind_of_investment', 'city', 'market', 'area', 'price_per_1m2', 'price', 'link']]
 
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         kind = [k for k in top3.head(3)['kind_of_investment']]
@@ -331,54 +326,35 @@ def update_row3(w_city, w_kind_of_investment, w_market):
         elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
             filtered_df = top3.loc[top3['kind_of_investment'] == w_kind_of_investment]
         elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-            try:
-                filtered_df = top3.loc[top3['kind_of_investment'] == w_kind_of_investment]
-            except IndexError:
-                filtered_df = 0
-
-        elif w_city != 'All' and w_kind_of_investment !=   'All' and w_market == 'All':
-            filtered_df = df.groupby(['city', 'kind_of_investment']).agg(
-                {'price_per_1m2': pd.Series.mean}).reset_index()
-            ind = filtered_df.index[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)][0]
-            average = filtered_df.iloc[ind]['price_per_1m2']
+            filtered_df = top3.loc[top3['market'] == w_market]
+        elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+            filtered_df = top3.loc[(top3['city'] == w_city) & (top3['kind_of_investment'] == w_kind_of_investment)]
         elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-            filtered_df = df.groupby(['kind_of_investment', 'market']).agg(
-                {'price_per_1m2': pd.Series.mean}).reset_index()
-            try:
-                ind = filtered_df.index[
-                    (filtered_df['market'] == w_market) & (filtered_df['kind_of_investment'] == w_kind_of_investment)][0]
-            except IndexError:
-                average = 0
-            else:
-                average = filtered_df.iloc[ind]['price_per_1m2']
+            filtered_df = top3.loc[(top3['market'] == w_market) & (top3['kind_of_investment'] == w_kind_of_investment)]
         elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-            filtered_df = df.groupby(['city', 'market']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
-            try:
-                ind = filtered_df.index[
-                    (filtered_df['market'] == w_market) & (filtered_df['city'] == w_city)][0]
-            except IndexError:
-                average = 0
-            else:
-                average = filtered_df.iloc[ind]['price_per_1m2']
+            filtered_df = top3.loc[(top3['city'] == w_city) & (top3['market'] == w_market)]
         elif w_city != 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-            filtered_df = df.groupby(['city', 'kind_of_investment', 'market']).agg(
-                {'price_per_1m2': pd.Series.mean}).reset_index()
-            try:
-                ind = filtered_df.index[(filtered_df['city'] == w_city) &
-                                        (filtered_df['kind_of_investment'] == w_kind_of_investment) &
-                                        (filtered_df['market'] == w_market)][0]
-            except IndexError:
-                average = 0
-            else:
-                average = filtered_df.iloc[ind]['price_per_1m2']
+            filtered_df = top3.loc[(top3['city'] == w_city) & (top3['kind_of_investment'] == w_kind_of_investment) & (top3['market'] == w_market)]
 
+        try:
+            kind = [k for k in filtered_df.head(3)['kind_of_investment']]
+        except IndexError:
+            kind = None
+        try:
+            area = [k for k in filtered_df.head(3)['area']]
+        except IndexError:
+            area = 0
+        try:
+            link = [k for k in filtered_df.head(3)['link']]
+        except IndexError:
+            link = None
 
     return [
         html.Div([
                html.H6(children='Top 2 offert:',
                        style={'textAlign': 'center',
                               'color': 'white',
-                              'fontSize': 20
+                              'fontSize': 18
                               }),
                html.Img(src=app.get_asset_url('topstar.png'),
                        style={'height': '40px','marginTop': 20},
@@ -390,7 +366,7 @@ def update_row3(w_city, w_kind_of_investment, w_market):
                     html.H6(f'{kind[0]} {area[0]} {"m²"} ',
                             style={'color': 'white',
                                    'font-weight': 'bold',
-                                   'fontSize': 20,
+                                   'fontSize': 18,
                                    'textAlign': 'center',
                                    'text-decoration': 'none'
                                    },
@@ -405,7 +381,7 @@ def update_row3(w_city, w_kind_of_investment, w_market):
                     html.H6(f'{kind[1]} {area[1]} {"m²"} ',
                             style={'color': 'white',
                                    'font-weight': 'bold',
-                                   'fontSize': 20,
+                                   'fontSize': 18,
                                    'textAlign': 'center',
                                    'text-decoration': 'none'
                                    },
@@ -431,7 +407,7 @@ def live_date_time(n_intervals):
                html.H6(children='Date & time',
                        style={'textAlign': 'center',
                               'color': 'white',
-                              'fontSize': 20
+                              'fontSize': 18
                               }),
                html.Img(src=app.get_asset_url('date.png'),
                        style={'height': '40px','marginTop': 20},
@@ -440,7 +416,7 @@ def live_date_time(n_intervals):
                html.H6(f'{time_string}',
                     style={'color': 'white',
                            'font-weight': 'bold',
-                           'fontSize': 20,
+                           'fontSize': 18,
                            'textAlign': 'center'
                            },
                     className='time_string'),
@@ -448,7 +424,7 @@ def live_date_time(n_intervals):
                 html.H6(f'{date_string}',
                     style={'color': 'white',
                            'font-weight': 'bold',
-                           'fontSize': 20,
+                           'fontSize': 18,
                            'textAlign': 'center'
                            },
                     className='time_string'),
@@ -462,20 +438,6 @@ def live_date_time(n_intervals):
               )
 def update_graph(w_city, w_kind_of_investment, w_market):
     df = connection()
-    # if w_city == 'All' and w_kind_of_investment == 'All':
-    #     filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
-    #     data = filtered_df
-    # elif w_city == 'All' and w_kind_of_investment != 'All':
-    #     filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
-    #     data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
-    #     print(data)
-    # elif w_city != 'All' and w_kind_of_investment != 'All':
-    #     filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
-    #     data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment)]
-    # else:
-    #     filtered_df = df.groupby(['city', 'kind_of_investment'])[['id']].count().reset_index()
-    #     data = filtered_df[(filtered_df['city'] == w_city)]
-
     df['market'].fillna('nieznany', inplace=True)
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         filtered_df = df.groupby('kind_of_investment').agg({'id': pd.Series.count}).reset_index()
@@ -519,8 +481,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             textinfo='label+value',
             hole=.7,
             rotation=15,
-            insidetextorientation= 'radial'
-
+            insidetextorientation= 'radial',
         )],
 
         'layout': go.Layout(
@@ -540,7 +501,6 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             legend={'orientation': 'h',
                     'bgcolor': '#1f2c56',
                     'xanchor': 'center', 'x': 0.5, 'y': -0.2}
-
         )
     }
 
@@ -550,7 +510,6 @@ def update_graph(w_city, w_kind_of_investment, w_market):
               Input('w_market','value'))
 def update_graph_two(w_city, w_kind_of_investment, w_market):
     df = connection()
-    # df = df.query_connection()
     df['market'].fillna('nieznany', inplace=True)
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         filtered_df = df.groupby('market').agg({'id': pd.Series.count}).reset_index()
@@ -577,14 +536,6 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
     else:
         filtered_df = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
         data = filtered_df[(filtered_df['city'] == w_city) & (filtered_df['kind_of_investment'] == w_kind_of_investment) & (filtered_df['market'] == w_market)]
-
-    # filtered_df = df.groupby(['city', 'kind_of_investment', 'market'])[['id']].count().reset_index()
-    # if w_city != 'All':
-    #     data = filtered_df[(filtered_df['city'] == w_city)]
-    # if w_kind_of_investment != 'All':
-    #     data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
-    # if w_market != 'All':
-    #     data = filtered_df[(filtered_df['market'] == w_market)]
 
     ind = data.index
     colors = ['green']
@@ -619,7 +570,6 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
             legend={'orientation': 'h',
                     'bgcolor': '#1f2c56',
                     'xanchor': 'center', 'x': 0.5, 'y': -0.2}
-
         )
     }
 
@@ -629,7 +579,6 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
               Input('w_market', 'value'))
 def update_graph(w_city, w_kind_of_investment, w_market):
     df = connection()
-    # df = df.query_connection()
     df['market'].fillna('nieznany', inplace=True)
     df['date_addition_add'] = (pd.to_datetime(df['date_addition_add'], format='%Y-%m').dt.strftime('%Y-%B'))
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
@@ -664,13 +613,9 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             name='Monthly Add',
             marker=dict(color='orange'),
             hoverinfo='text',
-
-            # hovertext=
-            # '<b>Date</b>: ' + covid_data_3['date'].tail(30).astype(str) + '<br>' +
-            # '<b>Daily Confirmed Cases</b>: ' + [f'{x:,.0f}' for x in covid_data_3['daily confirmed'].tail(30)] + '<br>' +
-            # '<b>Country</b>: ' + covid_data_3['Country/Region'].tail(30).astype(str) + '<br>'
-
-
+            hovertext=
+            '<b>Date additional add</b>: ' + offert['date_addition_add'] + '<br>' +
+            '<b>Offert</b>: ' + [f'{x:,.0f}' for x in offert['id']] + '<br>'
         ),
         ],
 
@@ -681,10 +626,10 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                    'xanchor': 'center',
                    'yanchor': 'top'},
             titlefont={'color': 'white',
-                       'size': 18},
+                       'size': 16},
             font=dict(family='sans-serif',
                       color='white',
-                      size=18),
+                      size=16),
             hovermode='closest',
             paper_bgcolor='#1f2c56',
             plot_bgcolor='#1f2c56',
@@ -703,7 +648,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                        tickfont=dict(
                            family='Aerial',
                            color='white',
-                           size=14
+                           size=16
                        )),
             yaxis=dict(title='Number of offers',
                        color='white',
@@ -716,7 +661,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                        tickfont=dict(
                            family='Aerial',
                            color='white',
-                           size=14
+                           size=16
                        )
                        )
         )
@@ -730,14 +675,14 @@ def update_graph(w_city, w_kind_of_investment, w_market):
     df = connection()
     price_per_1m2 = (df['price'] // df['area']).apply(np.ceil)
     df.insert(6, 'price_per_1m2', price_per_1m2)
-
-
-
-
+    df['market'].fillna('nieznany', inplace=True)
+    df['kind_of_investment'].fillna('nieznany', inplace=True)
     df['price_per_1m2'].fillna('nieznany', inplace=True)
+    df = df.sort_values('date_addition_add')
     df['date_addition_add'] = (pd.to_datetime(df['date_addition_add'], format='%Y-%m').dt.strftime('%Y-%B'))
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         data = df.groupby(['date_addition_add'], as_index=False).agg({'price_per_1m2': pd.Series.mean})
+
     elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
         filtered_df = df.groupby(['date_addition_add', 'kind_of_investment']).agg({'price_per_1m2': pd.Series.mean}).reset_index()
         data = filtered_df[(filtered_df['kind_of_investment'] == w_kind_of_investment)]
@@ -775,7 +720,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                 textposition = 'top center',
                 textfont = dict(
                     family = "Calibri",
-                    size = 18,
+                    size = 16,
                     color = text_color,
                 ),
                 mode = 'markers+lines+text',
@@ -783,21 +728,25 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                 marker = dict(size = 10, symbol = 'circle', color = 'white',
                               line = dict(color = '#00B0F0', width = 2)
                               ),
-
                 hoverinfo = 'text',
-                # hovertext =
-                # '<b>Month</b>: ' + months.astype(str) + '<br>' +
-                # '<b>Net Profit</b>: $' + [f'{x:,.0f}' for x in net_profit] + '<br>'
+                hovertext =
+                '<b>Date additional add</b>: ' + data['date_addition_add'] + '<br>' +
+                '<b>Offert</b>: ' + [f'{x:,.0f}' for x in data['price_per_1m2']] + '<br>'
             )],
 
         'layout': go.Layout(
+            title={'text': 'Price average: ' + (w_city),
+                   'y': 0.93,
+                   'x': 0.5,
+                   'xanchor': 'center',
+                   'yanchor': 'top'},
             plot_bgcolor = 'rgba(0,0,0,0)',
             paper_bgcolor = 'rgba(0,0,0,0)',
             titlefont={'color': 'white',
-                       'size': 18},
+                       'size': 16},
             font=dict(family='sans-serif',
                       color='white',
-                      size=18),
+                      size=16),
             margin = dict(r = 20, t = 20, b = 70, l = 90),
             xaxis = dict(title = 'Date',
                          visible = True,
@@ -810,8 +759,9 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                          ticks = 'outside',
                          tickfont = dict(
                              family = 'Aerial',
-                             size = 14,
-                             color = 'white')
+                             size = 16,
+                             color = 'white'),
+                         range=['2021-12', '2022-05'],
                          ),
 
             yaxis = dict(title = 'Price for 1m2',
@@ -827,12 +777,13 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                          ticks = 'outside',
                          tickfont = dict(
                              family = 'Aerial',
-                             size = 14,
-                             color = 'white')
+                             size = 16,
+                             color = 'white'),
+                         # range=[6000, 15000],
                          ),
+
         )
     }
-
 
 @app.callback(Output('map_chart', 'figure'),
               Input('w_city', 'value'),
@@ -840,6 +791,8 @@ def update_graph(w_city, w_kind_of_investment, w_market):
               Input('w_market', 'value'))
 def update_graph(w_city, w_kind_of_investment, w_market):
     df = add_column_lat_long(lat_and_long)
+    df['market'].fillna('nieznany', inplace=True)
+    df['kind_of_investment'].fillna('nieznany', inplace=True)
 
     if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
         geography = df.groupby(['city', 'lat', 'long'])[['id']].agg(
@@ -879,55 +832,6 @@ def update_graph(w_city, w_kind_of_investment, w_market):
     zoom = 5
     print(f'{zoom_lat} - {zoom_long}asdadadad')
 
-
-
-
-    # if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All' :
-    #     geography = df.groupby(['city', 'lat', 'long'])[['id']].agg({'id': pd.Series.count}).reset_index()
-    #     # zoom = 5
-    #     # zoom_lat = float(52.229675)
-    #     # zoom_long = float(21.012230)
-    # elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
-    #     geograp = df.groupby(['city','lat','long'])[[ 'id']].agg({'id': pd.Series.count}).reset_index()
-    #     geography = geograp[geograp['city']==w_city]
-    # elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-    #     geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg({'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    # elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-    #     geograp = df.groupby(['city', 'market', 'lat', 'long'])[['id']].agg(
-    #         {'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market)]
-    # elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-    #     geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg(
-    #         {'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['city'] == w_city) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    # elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-    #     geograp = df.groupby(['city', 'market', 'lat', 'long'])[['id']].agg(
-    #         {'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['market'] == w_market)]
-    # elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-    #     geograp = df.groupby(['city', 'kind_of_investment', 'lat', 'long'])[['id']].agg(
-    #         {'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['kind_of_investment'] == w_kind_of_investment)]
-    # elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-    #     geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
-    #         {'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['market'] == w_market) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    # else:
-    #     geograp = df.groupby(['city', 'kind_of_investment', 'market', 'lat', 'long'])[['id']].agg(
-    #         {'id': pd.Series.count}).reset_index()
-    #     geography = geograp[(geograp['city'] == w_city) & (geograp['market'] == w_market) & (geograp['kind_of_investment'] == w_kind_of_investment)]
-    #
-    # if w_city == 'All' and w_kind_of_investment == 'All' and w_market == 'All':
-    #     zoom_lat = float(52.229675)
-    #     zoom_long = float(21.012230)
-    #     zoom = 5
-    # else:
-    #     zoom=5
-    #     zoom_lat = float(geography['lat'])
-    #     zoom_long = float(geography['long'])
-    #     print(f'{zoom_lat} - {zoom_long}asdadadad')
-
     return {
         'data': [go.Scattermapbox(
             lon=geography['long'],
@@ -940,18 +844,11 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                                            sizemode='area',
                                            opacity=0.3),
             hoverinfo='text',
-            # hoverinfo='text',
-            # hovertext=
-            # '<b>Region</b>: ' + terr9['region_txt'].astype(str) + '<br>' +
-            # '<b>Country</b>: ' + terr9['country_txt'].astype(str) + '<br>' +
-            # '<b>Province/State</b>: ' + terr9['provstate'].astype(str) + '<br>' +
-            # '<b>City</b>: ' + terr9['city'].astype(str) + '<br>' +
-            # '<b>Year</b>: ' + terr9['iyear'].astype(str) + '<br>' +
-            # '<b>Death</b>: ' + [f'{x:,.0f}' for x in terr9['nkill']] + '<br>' +
-            # '<b>Injured</b>: ' + [f'{x:,.0f}' for x in terr9['nwound']] + '<br>' +
-            # '<b>Attack</b>: ' + [f'{x:,.0f}' for x in terr9['attacktype1']] + '<br>'
-
-
+            hovertext=
+            '<b>City</b>: ' + geography['city'] + '<br>' +
+            '<b>Latitude</b>: ' + geography['lat'] + '<br>' +
+            '<b>Longitude</b>: ' + geography['long'] + '<br>' +
+            '<b>Offert</b>: ' + [f'{x:,.0f}' for x in geography['id']] + '<br>'
         )],
 
         'layout': go.Layout(
@@ -963,12 +860,8 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                 accesstoken='pk.eyJ1IjoiZW1pbGxvODkiLCJhIjoiY2w3bnNjN2cyMG83eDN1bzB2OHB6NGh2OSJ9.FoBvs_PL6PdhytI3OGE2DA',
                 center = go.layout.mapbox.Center(lat=zoom_lat, lon=zoom_long),
                 style='dark',
-                # style='open-street-map',
                 zoom=zoom,
             ),
-
-
-
         )
     }
 

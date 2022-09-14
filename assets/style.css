@@ -201,6 +201,28 @@ font-size: 20px;
 .link {
     text-decoration: none;
 }
+
+.title_image {
+  display: flex;
+  flex-direction: row;
+  margin-top: 2px;
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  white-space: pre;
+}
+
+.logo_title {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  flex: 7;
+  margin-left: 10px;
+  margin-top: 3px;
+}
+
 /* width */
 ::-webkit-scrollbar {
   width: 10px !important;
