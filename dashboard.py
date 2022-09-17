@@ -10,6 +10,7 @@ from geography_lat_long import lat_and_long
 from datetime import datetime
 from dash.exceptions import PreventUpdate
 
+
 # data_preparator = DataPreparator()
 # data_preparator.prepare_data()
  ########
@@ -636,7 +637,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             legend={'orientation': 'h',
                     'bgcolor': '#1f2c56',
                     'xanchor': 'center', 'x': 0.5, 'y': -0.7},
-            margin=dict(r=0),
+            margin=dict(r=20, t=30, b=110, l=90),
             xaxis=dict(title='Date',
                        color = 'white',
                        showline=True,
@@ -747,7 +748,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             font=dict(family='sans-serif',
                       color='white',
                       size=16),
-            margin = dict(r = 20, t = 20, b = 70, l = 90),
+            margin = dict(r = 20, t = 30, b = 110, l = 90),
             xaxis = dict(title = 'Date',
                          visible = True,
                          color = 'white',
@@ -761,7 +762,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                              family = 'Aerial',
                              size = 16,
                              color = 'white'),
-                         range=['2021-12', '2022-05'],
+                         range=[datetime(2020, 12, 31), datetime(2022, 5,31)],
                          ),
 
             yaxis = dict(title = 'Price for 1m2',

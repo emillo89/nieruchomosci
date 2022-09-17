@@ -5,10 +5,9 @@ from pandas import DataFrame
 from typing import Optional, List
 
 class ReadData:
-    def __init__(self, databasename: str):
+    def __init__(self, databasename: str) -> None:
         self.con = DatabaseConnect(databasename)
         self.df = None
-
     def query_connection(self) -> DataFrame:
         connection = self.con.connect_data()
         self.df = pd.read_sql_query('Select * FROM property', connection)
