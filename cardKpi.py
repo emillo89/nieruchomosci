@@ -106,36 +106,37 @@ class CardKpiTree(CardKpi):
             kind = [k for k in top.head(3)['kind_of_investment']]
             area = [k for k in top.head(3)['area']]
             link = [k for k in top.head(3)['link']]
-        else:
-            if w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
-                filtered_df = top.loc[top['city'] == w_city]
-            elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-                filtered_df = top.loc[top['kind_of_investment'] == w_kind_of_investment]
-            elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-                filtered_df = top.loc[top['market'] == w_market]
-            elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
-                filtered_df = top.loc[(top['city'] == w_city) & (top['kind_of_investment'] == w_kind_of_investment)]
-            elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-                filtered_df = top.loc[
-                    (top['market'] == w_market) & (top['kind_of_investment'] == w_kind_of_investment)]
-            elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
-                filtered_df = top.loc[(top['city'] == w_city) & (top['market'] == w_market)]
-            elif w_city != 'All' and w_kind_of_investment != 'All' and w_market != 'All':
-                filtered_df = top.loc[
-                    (top['city'] == w_city) & (top['kind_of_investment'] == w_kind_of_investment) & (
-                                top['market'] == w_market)]
+            return kind, area, link
 
-            try:
-                kind = [k for k in filtered_df.head(3)['kind_of_investment']]
-            except IndexError:
-                kind = None
-            try:
-                area = [k for k in filtered_df.head(3)['area']]
-            except IndexError:
-                area = 0
-            try:
-                link = [k for k in filtered_df.head(3)['link']]
-            except IndexError:
-                link = None
+        elif w_city != 'All' and w_kind_of_investment == 'All' and w_market == 'All':
+            filtered_df = top.loc[top['city'] == w_city]
+        elif w_city == 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+            filtered_df = top.loc[top['kind_of_investment'] == w_kind_of_investment]
+        elif w_city == 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+            filtered_df = top.loc[top['market'] == w_market]
+        elif w_city != 'All' and w_kind_of_investment != 'All' and w_market == 'All':
+            filtered_df = top.loc[(top['city'] == w_city) & (top['kind_of_investment'] == w_kind_of_investment)]
+        elif w_city == 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+            filtered_df = top.loc[
+                (top['market'] == w_market) & (top['kind_of_investment'] == w_kind_of_investment)]
+        elif w_city != 'All' and w_kind_of_investment == 'All' and w_market != 'All':
+            filtered_df = top.loc[(top['city'] == w_city) & (top['market'] == w_market)]
+        elif w_city != 'All' and w_kind_of_investment != 'All' and w_market != 'All':
+            filtered_df = top.loc[
+                (top['city'] == w_city) & (top['kind_of_investment'] == w_kind_of_investment) & (
+                            top['market'] == w_market)]
+
+        try:
+            kind = [k for k in filtered_df.head(3)['kind_of_investment']]
+        except IndexError:
+            kind = ['', '']
+        try:
+            area = [k for k in filtered_df.head(3)['area']]
+        except IndexError:
+            area = ['', '']
+        try:
+            link = [k for k in filtered_df.head(3)['link']]
+        except IndexError:
+            link = ['', '']
 
         return kind, area, link

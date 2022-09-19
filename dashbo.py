@@ -1,28 +1,22 @@
 import numpy as np
-import pandas as pd
-import plotly.express as px
 from dash import Dash, html, dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-from connect_with_database import DatabaseConnect
-from readDatabase import ReadData
-from geography_lat_long import lat_and_long
 from datetime import datetime
 from dash.exceptions import PreventUpdate
 from cardKpi import CardKpi, CardKpiTwo, CardKpiTree
 from dropdownSelect import SelectDropdown
-from pandas import DataFrame
 from pie_graphs import PieChart, PieChartTwo
 from bar_chart import BarChart
 from line_chart import LineChart
-
+from map_chart import MapChart
+from geography_lat_long import lat_and_long
 
 card_kpi_1 = CardKpi('offert.db')
 card = card_kpi_1.query_connection('property')
 
 dropdown_select = SelectDropdown('offert.db')
 dropdown_select.query_connection('property')
-
 
 app = Dash(__name__)
 
@@ -38,11 +32,11 @@ app.layout = html.Div(children=[
                      className='title_image'
                      ),
 
-        html.H3('Data analysis flats and houses',
-                style={'margin-bottom': '-5px',
-                       'margin-left': '5px',
-                       'color':'white'},
-                className='title')
+            html.H3('Data analysis flats and houses',
+                    style={'margin-bottom': '-5px',
+                           'margin-left': '5px',
+                           'color': 'white'},
+                    className='title')
         ], className='logo_title'),
     ], id='header', className='row flex-display', style={'margin-buttom': '25px'}),
 
@@ -67,82 +61,80 @@ app.layout = html.Div(children=[
 
         ], className='card_container three column', style={'textAlign': 'center'}),
 
+        html.Div(children=[
+            html.Div(id='text_row2', style={'text-align': 'center'})
 
-    html.Div(children=[
-        html.Div(id='text_row2', style={'text-align': 'center'})
+        ], className='card_container three column'),
 
-           ], className='card_container three column'),
+        html.Div(children=[
+            html.Div(id='text_row3')
+        ], className='card_container three column', style={'textAlign': 'center'}),
 
-
-    html.Div(children=[
-                html.Div(id='text_row3')
-           ], className='card_container three column', style={'textAlign': 'center'}),
-
-    html.Div(children=[
-        html.H6(id='get_date_time',
-                style={'color': 'white'},
-                className='adjust_date_time'),
-           ], className='card_container three column', style={'textAlign': 'center'}),
+        html.Div(children=[
+            html.H6(id='get_date_time',
+                    style={'color': 'white'},
+                    className='adjust_date_time'),
+        ], className='card_container three column', style={'textAlign': 'center'}),
 
     ], className='row flex-display'),
 
-html.Div([
-        dcc.Interval(id = 'update_date_time',
-                     interval = 1000,
-                     n_intervals = 0)
+    html.Div([
+        dcc.Interval(id='update_date_time',
+                     interval=1000,
+                     n_intervals=0)
     ]),
 
     html.Div([
-        dcc.Interval(id = 'update_value',
-                     interval = 5000,
-                     n_intervals = 0)
+        dcc.Interval(id='update_value',
+                     interval=5000,
+                     n_intervals=0)
     ]),
 
     html.Div([
         html.Div([
             html.P('Select City:', style={'textAlign': 'center',
-                                          'color':'white',
+                                          'color': 'white',
                                           'fontSize': 20}),
             dcc.Dropdown(id='w_city',
                          multi=False,
                          value='All',
                          placeholder='Select City',
-                         options = [{'label': c, 'value':c}
-                                    for c in dropdown_select.show_city_dropdown()], className='dcc_compon'
+                         options=[{'label': c, 'value': c}
+                                  for c in dropdown_select.show_city_dropdown()], className='dcc_compon'
                          ),
 
             html.P('Select kind of investment:', style={'textAlign': 'center',
-                                          'color':'white',
-                                          'fontSize': 20}),
+                                                        'color': 'white',
+                                                        'fontSize': 20}),
             dcc.Dropdown(id='w_kind_of_investment',
                          multi=False,
                          value='All',
                          placeholder='Select kind of investition',
-                         options = [{'label': c, 'value':c}
-                                    for c in dropdown_select.show_kind_of_investment_dropdown()], className='dcc_compon'
+                         options=[{'label': c, 'value': c}
+                                  for c in dropdown_select.show_kind_of_investment_dropdown()], className='dcc_compon'
                          ),
 
             html.P('Select market:', style={'textAlign': 'center',
-                                          'color':'white',
-                                          'fontSize': 20}),
+                                            'color': 'white',
+                                            'fontSize': 20}),
             dcc.Dropdown(id='w_market',
                          multi=False,
                          value='All',
                          placeholder='Select market',
-                         options = [{'label': c, 'value':c}
-                                    for c in dropdown_select.show_market_dropdown()], className='dcc_compon'
+                         options=[{'label': c, 'value': c}
+                                  for c in dropdown_select.show_market_dropdown()], className='dcc_compon'
                          )
 
         ], className='create_container two columns'),
 
         html.Div([
-            dcc.Graph(id ='pie_chart', config={'displayModeBar': 'hover'}
+            dcc.Graph(id='pie_chart', config={'displayModeBar': 'hover'}
                       )
 
         ], className='create_container five columns'),
 
         html.Div([
-            dcc.Graph(id ='pie_chart_two', config={'displayModeBar': 'hover'}
+            dcc.Graph(id='pie_chart_two', config={'displayModeBar': 'hover'}
                       )
 
         ], className='create_container five columns'),
@@ -151,15 +143,15 @@ html.Div([
 
     html.Div([
         html.Div([
-            dcc.Graph(id = 'bar_chart', config={'displayModeBar': 'hover'}
+            dcc.Graph(id='bar_chart', config={'displayModeBar': 'hover'}
                       )
         ], className='create_container six column'),
 
         html.Div([
-            dcc.Graph(id = 'line_chart',
-                      config = {'displayModeBar': False},
-                      className = 'line_chart_size')
-        ], className = 'create_container six column')
+            dcc.Graph(id='line_chart',
+                      config={'displayModeBar': False},
+                      className='line_chart_size')
+        ], className='create_container six column')
 
     ], className='row flex-display'),
 
@@ -171,10 +163,11 @@ html.Div([
 
     ], className='row flex-display')
 
-    ], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'})
+], id='mainContainer', style={'display': 'flex', 'flex-direction': 'column'})
+
 
 @app.callback(Output('text_row2', 'children'),
-              Input('w_city','value'),
+              Input('w_city', 'value'),
               Input('w_kind_of_investment', 'value'),
               Input('w_market', 'value')
               )
@@ -187,27 +180,28 @@ def update_row2(w_city, w_kind_of_investment, w_market):
 
     return [
         html.Div([
-               html.H6(children='Average price [PLN]',
-                       style={'textAlign': 'center',
-                              'color': 'white',
-                              'fontSize': 20
-                              }),
-               html.Img(src=app.get_asset_url('price.png'),
-                       style={'height': '40px','marginTop': 20},
-                       className='price'),
+            html.H6(children='Average price [PLN]',
+                    style={'textAlign': 'center',
+                           'color': 'white',
+                           'fontSize': 20
+                           }),
+            html.Img(src=app.get_asset_url('price.png'),
+                     style={'height': '40px', 'marginTop': 20},
+                     className='price'),
 
-               html.H6('{0:,.0f}'.format(average),
+            html.H6('{0:,.0f}'.format(average),
                     style={'color': 'white',
                            'font-weight': 'bold',
                            'fontSize': 18,
                            'textAlign': 'center'
                            },
                     className='price'),
-           ],className = 'price')
-        ]
+        ], className='price')
+    ]
+
 
 @app.callback(Output('text_row3', 'children'),
-              Input('w_city','value'),
+              Input('w_city', 'value'),
               Input('w_kind_of_investment', 'value'),
               Input('w_market', 'value')
               )
@@ -217,16 +211,22 @@ def update_row3(w_city, w_kind_of_investment, w_market):
     data.fill_in_the_data()
     kind, area, link = data.top_two_offert(w_city, w_kind_of_investment, w_market)
 
+    if len(link) == 0 and len(kind) == 0 and len(area) == 0:
+        link = ['','']
+        kind = ['','']
+        area = ['','']
+
+
     return [
         html.Div([
-               html.H6(children='Top 2 offert:',
-                       style={'textAlign': 'center',
-                              'color': 'white',
-                              'fontSize': 18
-                              }),
-               html.Img(src=app.get_asset_url('topstar.png'),
-                       style={'height': '40px','marginTop': 20},
-                       className='price'),
+            html.H6(children='Top 2 offert:',
+                    style={'textAlign': 'center',
+                           'color': 'white',
+                           'fontSize': 18
+                           }),
+            html.Img(src=app.get_asset_url('topstar.png'),
+                     style={'height': '40px', 'marginTop': 20},
+                     className='price'),
 
             html.A(
                 href=link[0],
@@ -239,7 +239,7 @@ def update_row3(w_city, w_kind_of_investment, w_market):
                                    'text-decoration': 'none'
                                    },
                             className='link'
-                    )
+                            )
                 ],
             ),
 
@@ -260,6 +260,7 @@ def update_row3(w_city, w_kind_of_investment, w_market):
         ], className='top_offert')
     ]
 
+
 @app.callback(Output('get_date_time', 'children'),
               [Input('update_date_time', 'n_intervals')])
 def live_date_time(n_intervals):
@@ -272,16 +273,16 @@ def live_date_time(n_intervals):
 
     return [
         html.Div([
-               html.H6(children='Date & time',
-                       style={'textAlign': 'center',
-                              'color': 'white',
-                              'fontSize': 18
-                              }),
-               html.Img(src=app.get_asset_url('date.png'),
-                       style={'height': '40px','marginTop': 20},
-                       className='price'),
+            html.H6(children='Date & time',
+                    style={'textAlign': 'center',
+                           'color': 'white',
+                           'fontSize': 18
+                           }),
+            html.Img(src=app.get_asset_url('date.png'),
+                     style={'height': '40px', 'marginTop': 20},
+                     className='price'),
 
-               html.H6(f'{time_string}',
+            html.H6(f'{time_string}',
                     style={'color': 'white',
                            'font-weight': 'bold',
                            'fontSize': 18,
@@ -289,20 +290,21 @@ def live_date_time(n_intervals):
                            },
                     className='time_string'),
 
-                html.H6(f'{date_string}',
+            html.H6(f'{date_string}',
                     style={'color': 'white',
                            'font-weight': 'bold',
                            'fontSize': 18,
                            'textAlign': 'center'
                            },
                     className='time_string'),
-           ],className = 'date_time')
-        ]
+        ], className='date_time')
+    ]
+
 
 @app.callback(Output('pie_chart', 'figure'),
-              Input('w_city','value'),
-              Input('w_kind_of_investment','value'),
-              Input('w_market','value')
+              Input('w_city', 'value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value')
               )
 def update_graph(w_city, w_kind_of_investment, w_market):
     filtered_data = PieChart('offert.db')
@@ -310,7 +312,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
     filtered_data.fillna('nieznany', 'market')
     data = filtered_data.get_data_to_graph(w_city, w_kind_of_investment, w_market)
     ind = data.index
-    colors = [ '#dd1e35', '#778899']
+    colors = ['#dd1e35', '#778899']
 
     return {
         'data': [go.Pie(
@@ -321,11 +323,11 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             textinfo='label+value',
             hole=.7,
             rotation=15,
-            insidetextorientation= 'radial',
+            insidetextorientation='radial',
         )],
 
         'layout': go.Layout(
-            title={'text': 'Advertisements: ' + (w_city),
+            title={'text': 'Advertisements: ' + w_city,
                    'y': 0.93,
                    'x': 0.5,
                    'xanchor': 'center',
@@ -344,10 +346,11 @@ def update_graph(w_city, w_kind_of_investment, w_market):
         )
     }
 
+
 @app.callback(Output('pie_chart_two', 'figure'),
-              Input('w_city','value'),
-              Input('w_kind_of_investment','value'),
-              Input('w_market','value'))
+              Input('w_city', 'value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value'))
 def update_graph_two(w_city, w_kind_of_investment, w_market):
     filtered_data = PieChartTwo('offert.db')
     filtered_data.query_connection('property')
@@ -365,12 +368,12 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
             textinfo='label+value',
             hole=.7,
             rotation=15,
-            insidetextorientation= 'radial'
+            insidetextorientation='radial'
 
         )],
 
         'layout': go.Layout(
-            title={'text': 'Market: ' + (w_kind_of_investment),
+            title={'text': 'Market: ' + w_kind_of_investment,
                    'y': 0.93,
                    'x': 0.5,
                    'xanchor': 'center',
@@ -388,6 +391,7 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
                     'xanchor': 'center', 'x': 0.5, 'y': -0.2}
         )
     }
+
 
 @app.callback(Output('bar_chart', 'figure'),
               Input('w_city', 'value'),
@@ -414,7 +418,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
         ],
 
         'layout': go.Layout(
-            title={'text': 'When advertisements were add: ' + (w_city),
+            title={'text': 'When advertisements were add: ' + w_city,
                    'y': 0.93,
                    'x': 0.5,
                    'xanchor': 'center',
@@ -432,7 +436,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                     'xanchor': 'center', 'x': 0.5, 'y': -0.7},
             margin=dict(r=20, t=30, b=110, l=90),
             xaxis=dict(title='Date',
-                       color = 'white',
+                       color='white',
                        showline=True,
                        showgrid=True,
                        showticklabels=True,
@@ -461,6 +465,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
         )
     }
 
+
 @app.callback(Output('line_chart', 'figure'),
               Input('w_city', 'value'),
               Input('w_kind_of_investment', 'value'),
@@ -479,77 +484,128 @@ def update_graph(w_city, w_kind_of_investment, w_market):
     return {
         'data': [
             go.Scatter(
-                x = data['date_addition_add'],
-                y = data['price_per_1m2'],
-                text = data['price_per_1m2'],
-                texttemplate = '' + '%{text:,.0f}',
-                textposition = 'top center',
-                textfont = dict(
-                    family = "Calibri",
-                    size = 16,
-                    color = text_color,
+                x=data['date_addition_add'],
+                y=data['price_per_1m2'],
+                text=data['price_per_1m2'],
+                texttemplate='' + '%{text:,.0f}',
+                textposition='top center',
+                textfont=dict(
+                    family="Calibri",
+                    size=16,
+                    color=text_color,
                 ),
-                mode = 'markers+lines+text',
-                line = dict(shape = "spline", smoothing = 1.3, width = 3, color = '#B258D3'),
-                marker = dict(size = 10, symbol = 'circle', color = 'white',
-                              line = dict(color = '#00B0F0', width = 2)
-                              ),
-                hoverinfo = 'text',
-                hovertext =
+                mode='markers+lines+text',
+                line=dict(shape="spline", smoothing=1.3, width=3, color='#B258D3'),
+                marker=dict(size=10, symbol='circle', color='white',
+                            line=dict(color='#00B0F0', width=2)
+                            ),
+                hoverinfo='text',
+                hovertext=
                 '<b>Date additional add</b>: ' + data['date_addition_add'] + '<br>' +
                 '<b>Offert</b>: ' + [f'{x:,.0f}' for x in data['price_per_1m2']] + '<br>'
             )],
 
         'layout': go.Layout(
-            title={'text': 'Price average: ' + (w_city),
+            title={'text': 'Price average: ' + w_city,
                    'y': 0.93,
                    'x': 0.5,
                    'xanchor': 'center',
                    'yanchor': 'top'},
-            plot_bgcolor = 'rgba(0,0,0,0)',
-            paper_bgcolor = 'rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
             titlefont={'color': 'white',
                        'size': 16},
             font=dict(family='sans-serif',
                       color='white',
                       size=16),
-            margin = dict(r = 20, t = 30, b = 110, l = 90),
-            xaxis = dict(title = 'Date',
-                         visible = True,
-                         color = 'white',
-                         showline = False,
-                         showgrid = False,
-                         showticklabels = True,
-                         linecolor = 'white',
-                         linewidth = 1,
-                         ticks = 'outside',
-                         tickfont = dict(
-                             family = 'Aerial',
-                             size = 16,
-                             color = 'white'),
-                         range=[datetime(2020, 12, 31), datetime(2022, 5,31)],
-                         ),
+            margin=dict(r=20, t=30, b=110, l=90),
+            xaxis=dict(title='Date',
+                       visible=True,
+                       color='white',
+                       showline=False,
+                       showgrid=False,
+                       showticklabels=True,
+                       linecolor='white',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Aerial',
+                           size=16,
+                           color='white'),
+                       range=[datetime(2020, 12, 31), datetime(2022, 5, 31)],
+                       ),
 
-            yaxis = dict(title = 'Price for 1m2',
-                         tickprefix = ' ',
-                         tickformat = ',.0f',
-                         visible = True,
-                         color = 'white',
-                         showline = False,
-                         showgrid = False,
-                         showticklabels = True,
-                         linecolor = 'white',
-                         linewidth = 1,
-                         ticks = 'outside',
-                         tickfont = dict(
-                             family = 'Aerial',
-                             size = 16,
-                             color = 'white'),
-                         # range=[6000, 15000],
-                         ),
+            yaxis=dict(title='Price for 1m2',
+                       tickprefix=' ',
+                       tickformat=',.0f',
+                       visible=True,
+                       color='white',
+                       showline=False,
+                       showgrid=False,
+                       showticklabels=True,
+                       linecolor='white',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Aerial',
+                           size=16,
+                           color='white'),
+                       # range=[6000, 15000],
+                       ),
 
         )
     }
+
+
+@app.callback(Output('map_chart', 'figure'),
+              Input('w_city', 'value'),
+              Input('w_kind_of_investment', 'value'),
+              Input('w_market', 'value'))
+def update_graph(w_city, w_kind_of_investment, w_market):
+    df = MapChart('offert.db')
+    df.query_connection('property')
+    df.fillna('nieznany', 'market')
+    df.fillna('nieznany', 'kind_of_investment')
+    df.add_column_lat_long(lat_and_long)
+    geography = df.show_map(w_city, w_kind_of_investment, w_market)
+    zoom_lat = float(52.229675)
+    zoom_long = float(21.012230)
+    zoom = 5
+
+    return {
+        'data': [go.Scattermapbox(
+            lon=geography['long'],
+            lat=geography['lat'],
+            mode='markers',
+            marker=go.scattermapbox.Marker(size=geography['id'] * 10,
+                                           color=geography['id'],
+                                           colorscale='HSV',
+                                           showscale=False,
+                                           sizemode='area',
+                                           opacity=0.3),
+            hoverinfo='text',
+            hovertext=
+            '<b>City</b>: ' + geography['city'] + '<br>' +
+            '<b>Latitude</b>: ' + geography['lat'] + '<br>' +
+            '<b>Longitude</b>: ' + geography['long'] + '<br>' +
+            '<b>Offert</b>: ' + [f'{x:,.0f}' for x in geography['id']] + '<br>'
+        )],
+
+        'layout': go.Layout(
+            hovermode='x',
+            paper_bgcolor='#010915',
+            plot_bgcolor='#010915',
+            margin=dict(r=0, l=0, b=0, t=0),
+            mapbox=dict(
+                accesstoken='pk.eyJ1IjoiZW1pbGxvODkiLCJhIjoiY2w3bnNjN2cyMG83eDN1bzB2OHB6NGh2OSJ9.FoBvs_'
+                            'PL6PdhytI3OGE2DA',
+                center=go.layout.mapbox.Center(lat=zoom_lat, lon=zoom_long),
+                style='dark',
+                zoom=zoom,
+            ),
+        )
+    }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

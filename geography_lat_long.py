@@ -8,11 +8,3 @@ lat_and_long = {'Wrocław': {'lat': '51.107883', 'long': '17.038538'},
                 'Łódź': {'lat': '51.759048', 'long': '19.458599'},
                 'Białystok': {'lat': '53.132488', 'long': '23.168840'},
                 'Bydgoszcz': {'lat': '53.121132', 'long': '17.992970'}}
-
-city = 'Lublin'
-
-if city in lat_and_long:
-    lat = lat_and_long['Lublin']['lat']
-    long = lat_and_long['Lublin']['long']
-    print(lat)
-    print(long)
