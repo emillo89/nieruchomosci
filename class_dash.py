@@ -28,4 +28,5 @@ class ReadData:
     def insert_column(self, index_place: int, name_new_column: str, new_column: str) -> None:
         self.df.insert(index_place, name_new_column, new_column)
 
-
+    def convert_date(self, column: Optional, format: Optional, strformat: Optional) -> None:
+        self.df[column] = (pd.to_datetime(self.df['date_addition_add'], format=format).dt.strftime(strformat))
