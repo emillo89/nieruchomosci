@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from dash import Dash, html, dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
@@ -401,7 +402,12 @@ def update_graph(w_city, w_kind_of_investment, w_market):
     df = BarChart('offert.db')
     df.query_connection('property')
     df.fillna('nieznany', 'market')
+    # offert_year = df.take_year()
+    # offert_month = df.take_month()
     df.convert_date('date_addition_add', format='%Y-%m', strformat='%Y-%B')
+    # df.insert_column(22, 'year', offert_year)
+    # df.insert_column(23, 'month', offert_month)
+
     offert = df.show_bar_chart(w_city, w_kind_of_investment, w_market)
 
     return {

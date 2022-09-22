@@ -20,4 +20,3 @@ class WebScrappingMainPage(WebScrapper):
                 link = f"https://www.otodom.pl{link['href']}"
                 if link not in self.all_links:
                     self.all_links.append(link)
-

@@ -68,3 +68,5 @@ class ReadData:
         count_add = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2':pd.Series.count})['price_per_1m2']
         average_price = round(price //count_add)
         return average_price
+
+
