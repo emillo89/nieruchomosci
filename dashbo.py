@@ -20,6 +20,7 @@ dropdown_select = SelectDropdown('offert.db')
 dropdown_select.query_connection('property')
 
 app = Dash(__name__)
+server = app.server
 
 app.layout = html.Div(children=[
     html.Div(children=[
