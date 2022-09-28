@@ -5,6 +5,10 @@ body {
   margin: 5%;
 }
 
+.scal{
+  transform: scale(0.8);
+}
+
 #pie_chart{
     size: 150%;
 }
@@ -41,6 +45,7 @@ body {
   margin: 0;
   padding: 5px;
   width: calc(100%-40px);
+  font-size: 14;
 }
 
 .fix_label {

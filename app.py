@@ -31,14 +31,15 @@ app.layout = html.Div(children=[
                             'width': 'auto',
                             'margin-bottom': '25px',
                             'margin-left': '5px'},
-                     className='title_image'
+                     className='title_image scal'
                      ),
 
             html.H3('Data analysis flats and houses',
                     style={'margin-bottom': '-5px',
-                           'margin-left': '5px',
-                           'color': 'white'},
-                    className='title')
+                           'margin-left': '2px',
+                           'color': 'white',
+                           'fontSize': 20},
+                    className='title scal')
         ], className='logo_title'),
     ], id='header', className='row flex-display', style={'margin-buttom': '25px'}),
 
@@ -47,35 +48,37 @@ app.layout = html.Div(children=[
             html.H6(children='Total add',
                     style={'textAlign': 'center',
                            'color': 'white',
-                           'fontSize': 20
-                           }),
+                           'fontSize': 18,
+                           'marginTop': 20
+                           }, className='scal'),
             html.Img(src=app.get_asset_url('calculator.png'),
-                     style={'height': '40px', 'marginTop': 20},
-                     className='calculator'),
+                     style={'height': '40px', 'marginTop': 8},
+                     className='calculator scal'),
 
             html.H6(f'{card_kpi_1.count_totat_add()}',
                     style={'color': 'white',
                            'font-weight': 'bold',
-                           'fontSize': 20,
-                           'textAlign': 'center'
+                           'fontSize': 18,
+                           'textAlign': 'center',
+                           'marginTop': -1
                            },
-                    className='count_add')
+                    className='count_add scal')
 
         ], className='card_container three column', style={'textAlign': 'center'}),
 
         html.Div(children=[
-            html.Div(id='text_row2', style={'text-align': 'center'})
+            html.Div(id='text_row2', style={'text-align': 'center'}, className='scal')
 
         ], className='card_container three column'),
 
         html.Div(children=[
-            html.Div(id='text_row3')
+            html.Div(id='text_row3', className='scal')
         ], className='card_container three column', style={'textAlign': 'center'}),
 
         html.Div(children=[
             html.H6(id='get_date_time',
                     style={'color': 'white'},
-                    className='adjust_date_time'),
+                    className='adjust_date_time scal'),
         ], className='card_container three column', style={'textAlign': 'center'}),
 
     ], className='row flex-display'),
@@ -96,8 +99,9 @@ app.layout = html.Div(children=[
         html.Div([
             html.P('Select City:', style={'textAlign': 'center',
                                           'color': 'white',
-                                          'fontSize': 20}),
+                                          'fontSize': 14}),
             dcc.Dropdown(id='w_city',
+                         style={'fontSize': 14},
                          multi=False,
                          value='All',
                          placeholder='Select City',
@@ -107,19 +111,21 @@ app.layout = html.Div(children=[
 
             html.P('Select kind of investment:', style={'textAlign': 'center',
                                                         'color': 'white',
-                                                        'fontSize': 20}),
+                                                        'fontSize': 14}),
             dcc.Dropdown(id='w_kind_of_investment',
+                         style={'fontSize': 14},
                          multi=False,
                          value='All',
                          placeholder='Select kind of investition',
                          options=[{'label': c, 'value': c}
-                                  for c in dropdown_select.show_kind_of_investment_dropdown()], className='dcc_compon'
+                                for c in dropdown_select.show_kind_of_investment_dropdown()], className='dcc_compon'
                          ),
 
             html.P('Select market:', style={'textAlign': 'center',
                                             'color': 'white',
-                                            'fontSize': 20}),
+                                            'fontSize': 14}),
             dcc.Dropdown(id='w_market',
+                         style={'fontSize': 14},
                          multi=False,
                          value='All',
                          placeholder='Select market',
@@ -130,14 +136,14 @@ app.layout = html.Div(children=[
         ], className='create_container two columns'),
 
         html.Div([
-            dcc.Graph(id='pie_chart', config={'displayModeBar': 'hover'}
-                      )
+            dcc.Graph(id='pie_chart', config={'displayModeBar': 'hover'},
+                      className='scal')
 
         ], className='create_container five columns'),
 
         html.Div([
-            dcc.Graph(id='pie_chart_two', config={'displayModeBar': 'hover'}
-                      )
+            dcc.Graph(id='pie_chart_two', config={'displayModeBar': 'hover'},
+                      className='scal')
 
         ], className='create_container five columns'),
 
@@ -185,7 +191,7 @@ def update_row2(w_city, w_kind_of_investment, w_market):
             html.H6(children='Average price [PLN]',
                     style={'textAlign': 'center',
                            'color': 'white',
-                           'fontSize': 20
+                           'fontSize': 18
                            }),
             html.Img(src=app.get_asset_url('price.png'),
                      style={'height': '40px', 'marginTop': 20},
@@ -195,7 +201,8 @@ def update_row2(w_city, w_kind_of_investment, w_market):
                     style={'color': 'white',
                            'font-weight': 'bold',
                            'fontSize': 18,
-                           'textAlign': 'center'
+                           'textAlign': 'center',
+                           'marginTop': 10
                            },
                     className='price'),
         ], className='price')
@@ -359,7 +366,7 @@ def update_graph_two(w_city, w_kind_of_investment, w_market):
     filtered_data.fillna('nieznany', 'market')
     data = filtered_data.get_data_to_graph(w_city, w_kind_of_investment, w_market)
     ind = data.index
-    colors = ['green']
+    colors = ['green', 'gold', 'purple']
 
     return {
         'data': [go.Pie(
@@ -416,7 +423,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             x=offert['date_addition_add'],
             y=offert['id'],
             name='Monthly Add',
-            marker=dict(color='orange'),
+            marker=dict(color='#00B0F0'),
             hoverinfo='text',
             hovertext=
             '<b>Date additional add</b>: ' + offert['date_addition_add'] + '<br>' +
@@ -431,10 +438,10 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                    'xanchor': 'center',
                    'yanchor': 'top'},
             titlefont={'color': 'white',
-                       'size': 16},
+                       'size': 14},
             font=dict(family='sans-serif',
                       color='white',
-                      size=16),
+                      size=14),
             hovermode='closest',
             paper_bgcolor='#1f2c56',
             plot_bgcolor='#1f2c56',
@@ -453,7 +460,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                        tickfont=dict(
                            family='Aerial',
                            color='white',
-                           size=16
+                           size=14
                        )),
             yaxis=dict(title='Number of offers',
                        color='white',
@@ -466,7 +473,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                        tickfont=dict(
                            family='Aerial',
                            color='white',
-                           size=16
+                           size=14
                        )
                        )
         )
@@ -498,7 +505,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                 textposition='top center',
                 textfont=dict(
                     family="Calibri",
-                    size=16,
+                    size=14,
                     color=text_color,
                 ),
                 mode='markers+lines+text',
@@ -521,10 +528,10 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
             titlefont={'color': 'white',
-                       'size': 16},
+                       'size': 14},
             font=dict(family='sans-serif',
                       color='white',
-                      size=16),
+                      size=14),
             margin=dict(r=20, t=30, b=110, l=90),
             xaxis=dict(title='Date',
                        visible=True,
@@ -537,7 +544,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                        ticks='outside',
                        tickfont=dict(
                            family='Aerial',
-                           size=16,
+                           size=14,
                            color='white'),
                        range=[datetime(2020, 12, 31), datetime(2022, 5, 31)],
                        ),
@@ -555,9 +562,8 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                        ticks='outside',
                        tickfont=dict(
                            family='Aerial',
-                           size=16,
-                           color='white'),
-                       # range=[6000, 15000],
+                           size=14,
+                           color='white')
                        ),
 
         )
