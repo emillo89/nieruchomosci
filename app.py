@@ -34,7 +34,7 @@ app.layout = html.Div(children=[
                      className='title_image scal'
                      ),
 
-            html.H3('Data analysis flats and houses',
+            html.H3('DATA   ANALYSIS   FLATS   AND   HOUSES',
                     style={'margin-bottom': '-5px',
                            'margin-left': '2px',
                            'color': 'white',
@@ -153,13 +153,13 @@ app.layout = html.Div(children=[
         html.Div([
             dcc.Graph(id='bar_chart', config={'displayModeBar': 'hover'}
                       )
-        ], className='create_container six column'),
+        ], className='create_container1 six column'),
 
         html.Div([
             dcc.Graph(id='line_chart',
                       config={'displayModeBar': False},
                       className='line_chart_size')
-        ], className='create_container six column')
+        ], className='create_container1 six column')
 
     ], className='row flex-display'),
 
