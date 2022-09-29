@@ -1,8 +1,7 @@
 from connect_with_database import DatabaseConnect
 import pandas as pd
 import numpy as np
-from pandas import DataFrame
-from typing import Optional, List
+from typing import Optional
 
 
 class ReadData:

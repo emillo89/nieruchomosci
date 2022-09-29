@@ -3,9 +3,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
 
-
 class WebScrapper:
-    def __init__(self):
+    def __init__(self) -> None:
         option = webdriver.ChromeOptions()
         option.add_argument('headless')
         service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")

@@ -1,4 +1,5 @@
 from webscrapper import WebScrapper
+from bs4 import BeautifulSoup
 
 
 class WebScrappingMainPage(WebScrapper):
@@ -8,12 +9,12 @@ class WebScrappingMainPage(WebScrapper):
         self.all_links = []
 
     @staticmethod
-    def get_how_many_pages(soup):
+    def get_how_many_pages(soup: BeautifulSoup) -> int:
         page_buttons = soup.select('.css-12q40o1 nav button')
         pages = int([button.text for button in page_buttons if button.text != ''][-1])
         return pages
 
-    def get_links_with_main_page(self, soup):
+    def get_links_with_main_page(self, soup: BeautifulSoup) -> None:
         links = soup.find_all('a', class_='css-b2mfz3')
         for link in links:
             if link['href'].startswith('/'):

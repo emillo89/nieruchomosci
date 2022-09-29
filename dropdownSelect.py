@@ -1,7 +1,6 @@
 from class_dash import ReadData
 import numpy as np
-from typing import Optional, List
-import pandas as pd
+from typing import List
 
 
 class SelectDropdown(ReadData):
@@ -24,4 +23,3 @@ class SelectDropdown(ReadData):
         market = self.df['market'].unique()
         market = np.append(market, 'All')
         return market
-

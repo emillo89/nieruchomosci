@@ -1,13 +1,12 @@
 from bs4 import BeautifulSoup
 from selenium.common import NoSuchElementException, ElementClickInterceptedException, InvalidArgumentException
 from selenium.webdriver.common.by import By
-
+from typing import Optional, Tuple, List, Dict
 from webscrapper import WebScrapper
 from webscrapping_main_page import WebScrappingMainPage
 from models_flat import *
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
-
 from datetime import datetime
 
 DETAILS = ['Powierzchnia', 'Forma własności', 'Liczba pokoi', 'Stan wykończenia', 'Piętro', 'Balkon / ogród / taras',
@@ -22,7 +21,7 @@ class WebScrapping(WebScrappingMainPage):
     def __init__(self):
         super().__init__()
 
-    def __contact(self):
+    def __contact(self) -> Tuple:
         try:
             accept = self.driver.find_element(By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
         except NoSuchElementException:
@@ -67,14 +66,14 @@ class WebScrapping(WebScrappingMainPage):
             contact_person = None
         return contact_nr, contact_person
 
-    def get_links(self, url):
+    def get_links(self, url: str) -> Tuple:
         self.driver.get(url)
         contact_number, contact_person = self.__contact()
         soup = BeautifulSoup(self.driver.page_source, 'lxml')
         return soup, contact_number, contact_person
 
     @staticmethod
-    def check_price(price):
+    def check_price(price: str) -> str:
         try:
             price = price.getText().replace(' ', '').split('zł')[0].replace(',', '.')
         except AttributeError:
@@ -83,18 +82,17 @@ class WebScrapping(WebScrappingMainPage):
             price = None
         return price
 
-    def get_price(self, soup):
+    def get_price(self, soup: BeautifulSoup) -> str:
         price = soup.find('strong', class_='css-8qi9av')
         return self.check_price(price)
 
     @staticmethod
-    def get_loc(soup_el):
+    def get_loc(soup_el: str) -> Tuple:
         locations = [locate.getText() for locate in soup_el]
         try:
             kind_of_investment = locations[0].split(' ')[0]
         except IndexError:
             kind_of_investment = None
-
         try:
             city = locations[2]
         except IndexError:
@@ -116,12 +114,12 @@ class WebScrapping(WebScrappingMainPage):
                 street = None
         return kind_of_investment, city, province, district, street
 
-    def get_locations(self, soup):
+    def get_locations(self, soup: BeautifulSoup) -> Tuple:
         locations = soup.find_all('a', class_='css-1in5nid')
         return self.get_loc(locations)
 
     @staticmethod
-    def take_all_details(dict):
+    def take_all_details(dict: Dict) -> Dict:
         for key in DETAILS:
             try:
                 dict[key]
@@ -165,8 +163,8 @@ class WebScrapping(WebScrappingMainPage):
         print(dict)
         return dict
 
-    def __get_details(self, soup):
-        search = soup.find_all('div',class_='css-1qzszy5')
+    def __get_details(self, soup: BeautifulSoup) -> Dict:
+        search = soup.find_all('div', class_='css-1qzszy5')
         details = [info.getText() for info in search]
         details_dict = {}
         long = len(details)
@@ -175,7 +173,7 @@ class WebScrapping(WebScrappingMainPage):
         print(details_dict)
         return self.take_all_details(details_dict)
 
-    def show_details(self, soup):
+    def show_details(self, soup: BeautifulSoup) -> List:
         details = dict(sorted(self.__get_details(soup).items()))
         list = []
         for index in details:
@@ -184,22 +182,19 @@ class WebScrapping(WebScrappingMainPage):
         return list
 
     @staticmethod
-    def show_offert(nr):
+    def show_offert(nr: str) -> str:
         try:
             offert_nr = nr.text.split(' ')[-1]
         except AttributeError:
             offert_nr = None
         return offert_nr
 
-    def get_nr_offert(self,soup):
+    def get_nr_offert(self, soup: BeautifulSoup) -> str:
         nr = soup.find('div', class_='css-jjerc6')
         return self.show_offert(nr)
 
     @staticmethod
-    def show_date(date):
-        unit = ['sekunda', 'sekundy', 'sekund', 'minutę', 'minuty', 'minut', 'minuta', 'godzina', 'godzin',
-                'godziny', 'dzień', 'dni', 'miesiąc',
-                'miesiące', 'miesięcy', 'rok', 'lata']
+    def show_date(date) -> Optional:
         now = datetime.today().date()
         try:
             date_info = date.text.split(' ')
@@ -231,16 +226,16 @@ class WebScrapping(WebScrappingMainPage):
         date_addition = soup.find('div', class_='css-atkgr')
         return self.show_date(date_addition)
 
-    def get_date_actualisation(self, soup):
+    def get_date_actualisation(self, soup: BeautifulSoup):
         date_actualisation = soup.find('div', class_='css-zojvsz')
         return self.show_date(date_actualisation)
 
     def create_new_flat(self, kind_of_investment, city, area, price, rooms, own, year_of_building, available, rent,
-                        floor, heating, car_park,market, advertiser_add, state_of_the_building_finish, province,
-                        district, street,date_addition_add, date_actualisation_add, type_of_building,
+                        floor, heating, car_park, market, advertiser_add, state_of_the_building_finish, province,
+                        district, street, date_addition_add, date_actualisation_add, type_of_building,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
-                        equipment, roof, access, leisure_house,numbers_of_floors,fence,neighborhood,attic,roofing,
-                        parcel_area, location, contact_person, contact_number, link, nr_offert,)->Flats:
+                        equipment, roof, access, leisure_house, numbers_of_floors, fence, neighborhood, attic, roofing,
+                        parcel_area, location, contact_person, contact_number, link, nr_offert) -> Flats:
 
         new_flat = Flats(
             kind_of_investment=kind_of_investment,
@@ -290,43 +285,3 @@ class WebScrapping(WebScrappingMainPage):
         )
 
         return new_flat
-
-
-
-
-
-
-
-
-
-# url = 'https://www.otodom.pl/pl/oferta/unikatowe-mieszkanie-z-widokiem-na-centrum-ID4hom3'
-# service = Service(executable_path="C:/Users/emils/PycharmProjects/Development/chromedriver.exe")
-# driver = webdriver.Chrome(service=service)
-# driver.get(url)
-# time.sleep(0.5)
-# soup = BeautifulSoup(driver.page_source, 'lxml')
-#
-# info = soup.find_all('a', class_='css-1in5nid')
-# locations = [locate.getText() for locate in info]
-# kind_of_investment = locations[0].split(' ')[0]
-# city = locations[2]
-# province = locations[1]
-# district = locations[3]
-# street = locations[-1]
-# print(f'{city} - {province} - {street}')
-# rooms = soup.find_all('div',class_='css-1qzszy5')
-# details = [cos.getText() for cos in rooms]
-# long = len(details)
-# new_dict = {}
-# # for index in range(0,long,2):
-# #     new_dict[details[index]] = details[index+1]
-# # print(new_dict)
-#
-#
-# # print(details)
-# try:
-#     accept = soup.find('button', '#onetrust-accept-btn-handler')
-# except NoSuchElementException:
-#     accept = None
-# else:
-#     accept.click()

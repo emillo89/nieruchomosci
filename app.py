@@ -118,7 +118,7 @@ app.layout = html.Div(children=[
                          value='All',
                          placeholder='Select kind of investition',
                          options=[{'label': c, 'value': c}
-                                for c in dropdown_select.show_kind_of_investment_dropdown()], className='dcc_compon'
+                                    for c in dropdown_select.show_kind_of_investment_dropdown()], className='dcc_compon'
                          ),
 
             html.P('Select market:', style={'textAlign': 'center',
@@ -221,10 +221,9 @@ def update_row3(w_city, w_kind_of_investment, w_market):
     kind, area, link = data.top_two_offert(w_city, w_kind_of_investment, w_market)
 
     if len(link) == 0 and len(kind) == 0 and len(area) == 0:
-        link = ['','']
-        kind = ['','']
-        area = ['','']
-
+        link = ['', '']
+        kind = ['', '']
+        area = ['', '']
 
     return [
         html.Div([
@@ -425,8 +424,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
             name='Monthly Add',
             marker=dict(color='#00B0F0'),
             hoverinfo='text',
-            hovertext=
-            '<b>Date additional add</b>: ' + offert['date_addition_add'] + '<br>' +
+            hovertext='<b>Date additional add</b>: ' + offert['date_addition_add'] + '<br>' +
             '<b>Offert</b>: ' + [f'{x:,.0f}' for x in offert['id']] + '<br>'
         ),
         ],
@@ -514,8 +512,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                             line=dict(color='#00B0F0', width=2)
                             ),
                 hoverinfo='text',
-                hovertext=
-                '<b>Date additional add</b>: ' + data['date_addition_add'] + '<br>' +
+                hovertext='<b>Date additional add</b>: ' + data['date_addition_add'] + '<br>' +
                 '<b>Offert</b>: ' + [f'{x:,.0f}' for x in data['price_per_1m2']] + '<br>'
             )],
 
@@ -597,8 +594,7 @@ def update_graph(w_city, w_kind_of_investment, w_market):
                                            sizemode='area',
                                            opacity=0.3),
             hoverinfo='text',
-            hovertext=
-            '<b>City</b>: ' + geography['city'] + '<br>' +
+            hovertext='<b>City</b>: ' + geography['city'] + '<br>' +
             '<b>Latitude</b>: ' + geography['lat'] + '<br>' +
             '<b>Longitude</b>: ' + geography['long'] + '<br>' +
             '<b>Offert</b>: ' + [f'{x:,.0f}' for x in geography['id']] + '<br>'

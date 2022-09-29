@@ -21,21 +21,29 @@
 #     print('dada')
 
 
-link = ['a', 'b']
+# link = ['a', 'b']
+#
+# def add_link(link):
+#     with open("nowy.txt", "a", encoding="UTF-8") as file:
+#         for li in link:
+#             file.write(li)
+#             file.write('\n')
+# add_link(link)
+#
+# def use_link():
+#     with open('nowy.txt', "r", encoding="UTF-8") as file:
+#        for i in file:
+#         print(file.readline())
 
-def add_link(link):
-    with open("nowy.txt", "a", encoding="UTF-8") as file:
-        for li in link:
-            file.write(li)
-            file.write('\n')
-add_link(link)
-
-def use_link():
-    with open('nowy.txt', "r", encoding="UTF-8") as file:
-       for i in file:
-        print(file.readline())
-
-use_link()
+# use_link()
 # for i in link:
 #     print(i)
+
+def cos():
+    a = 5
+    b= 6
+    return a, b
+
+a, b = cos()
+print(a,b)
 

@@ -4,10 +4,13 @@ import numpy as np
 from pandas import DataFrame
 from typing import Optional, List
 
+
 class ReadData:
+
     def __init__(self, databasename: str) -> None:
         self.con = DatabaseConnect(databasename)
         self.df = None
+
     def query_connection(self) -> DataFrame:
         connection = self.con.connect_data()
         self.df = pd.read_sql_query('Select * FROM property', connection)
@@ -28,11 +31,11 @@ class ReadData:
         houses = self.df.loc[self.df[column] == value].count()['id']
         return houses
 
-    def count_houses(self):
+    def count_houses(self) -> int:
         houses = self.df.loc[self.df['kind_of_investment'] == 'Dom'].count()['id']
         return houses
 
-    def count_flats(self):
+    def count_flats(self) -> int:
         flats = self.df.loc[self.df['kind_of_investment'] == 'Mieszkanie'].count()['id']
         return flats
 
@@ -44,29 +47,30 @@ class ReadData:
         kind_of_investment = self.df['kind_of_investment'].unique()
         return kind_of_investment
 
-    def show_market_dropdown(self):
+    def show_market_dropdown(self) -> List:
         self.fillna('nieznany', 'market')
         market = self.df['market'].unique()
         return market
 
-    def fillna(self, value, column):
+    def fillna(self, value, column) -> None:
         self.df[column].fillna(value, inplace=True)
 
     def price_per_m2(self) -> float:
         price = (self.df['price'] // self.df['area']).apply(np.ceil)
         return price
 
-    def insert_column(self, index_place, name_new_column, new_column):
+    def insert_column(self, index_place, name_new_column, new_column) -> None:
         self.df.insert(index_place, name_new_column, new_column)
 
-    def kind_advertiser_add(self):
-        kind_advertisement = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2':pd.Series.sum})['advertiser_add']
+    def kind_advertiser_add(self) -> DataFrame:
+        kind_advertisement = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2': pd.Series.sum})
+        ['advertiser_add']
         return kind_advertisement
 
-    def average_price_for_kind_advertisement(self):
-        price = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2': pd.Series.sum})['price_per_1m2']
-        count_add = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2':pd.Series.count})['price_per_1m2']
-        average_price = round(price //count_add)
+    def average_price_for_kind_advertisement(self) -> int:
+        price = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2': pd.Series.sum})
+        ['price_per_1m2']
+        count_add = self.df.groupby(['advertiser_add'], as_index=False).agg({'price_per_1m2': pd.Series.count})
+        ['price_per_1m2']
+        average_price = round(price // count_add)
         return average_price
-
-
