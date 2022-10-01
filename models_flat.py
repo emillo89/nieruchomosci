@@ -59,3 +59,15 @@ class Flats(Base):
 engine = create_engine('sqlite:///offert.db', echo=True)
 Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine)
+
+
+class Links(Base):
+    __tablename__ = 'link'
+    id = Column(Integer(), primary_key=True)
+    link = Column(String(256), nullable=True, unique=True)
+    link_active = Column(String(256), nullable=True, default='active')
+
+
+engine = create_engine('sqlite:///link.db', echo=True)
+Base.metadata.create_all(bind=engine)
+Session = sessionmaker(bind=engine)
