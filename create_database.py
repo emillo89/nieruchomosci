@@ -1,17 +1,15 @@
 from sqlalchemy.exc import IntegrityError
 from webscrapping import WebScrapping
 from webscrapping_main_page import WebScrappingMainPage
-from models_flat import Session
-
-
+from models_flat import Links, Session
 
 
 session = Session()
 
-def add_link_to_file(link):
-    with open("link.txt", "w") as file:
-        for li in link:
-            file.write(li)
+# def add_link_to_file(link):
+#     with open("link.txt", "w") as file:
+#         for li in link:
+#             file.write(li)
 
 
 def parse_main_page(page: int) -> list:
@@ -64,56 +62,59 @@ Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing'''
 
 def parse_page(page: int):
     # all_links = parse_main_page(page)
-    with open('link_offert.txt', 'r+', encoding='UTF-8') as all_links:
+    # with open('link_offert.txt', 'r+', encoding='UTF-8') as all_links:
+    session = Session()
+    all_links = session.query(Links).all()
+    for row in all_links:
+        print(row.link)
+        try:
+            site = WebScrapping()
+            soup, contact_person, contact_number = site.get_links(row.link)
+        except AttributeError:
 
-        for url in all_links:
-            print(url)
-            try:
-                site = WebScrapping()
-                soup, contact_person, contact_number = site.get_links(url)
-            except AttributeError:
+            continue
+        else:
+            print('3')
+            price = site.get_price(soup)
+            if price == None:
                 continue
-            else:
-                price = site.get_price(soup)
-                if price == None:
-                    continue
-                kind_of_investment, city, province, district, street = site.get_locations(soup)
-                balcony, rent, roof, access, leisure_house, available, own, suplementary, numbers_of_floors, rooms,\
-                building_material, media, car_park, remote_service, fence, heating, windows, neighborhood, floor, attic,\
-                roofing, area, parcel_area, location, type_of_building, year_of_building, market,\
-                state_of_the_building_finish, advertiser_add, elevator, equipment, security = site.show_details(soup)
-                if city == None and own == None and area == None:
-                    continue
+            kind_of_investment, city, province, district, street = site.get_locations(soup)
+            balcony, rent, roof, access, leisure_house, available, own, suplementary, numbers_of_floors, rooms,\
+            building_material, media, car_park, remote_service, fence, heating, windows, neighborhood, floor, attic,\
+            roofing, area, parcel_area, location, type_of_building, year_of_building, market,\
+            state_of_the_building_finish, advertiser_add, elevator, equipment, security = site.show_details(soup)
+            if city == None and own == None and area == None:
+                continue
 
-                nr_offert = site.get_nr_offert(soup)
-                date_addition_add = site.get_date_addition(soup)
-                date_actualisation_add = site.get_date_actualisation(soup)
-                print(kind_of_investment)
-                print(f'''{price} - {area} - {rooms} - {own} - {year_of_building} - {available} - {rent} - {floor} - {heating} - {car_park},
-                {market} - {advertiser_add} - {state_of_the_building_finish} - {city} - {province} - {district} - {street} -
-                {type_of_building}, {kind_of_investment}, {date_addition_add} - {date_actualisation_add}
-                {building_material} - {suplementary} - {remote_service} - {security} - {media} - {balcony} - {windows} - {
-                    elevator} -
-                {equipment} - {nr_offert}  -{contact_person} - {contact_number} - {url}''')
+            nr_offert = site.get_nr_offert(soup)
+            date_addition_add = site.get_date_addition(soup)
+            date_actualisation_add = site.get_date_actualisation(soup)
+            print(kind_of_investment)
+            print(f'''{price} - {area} - {rooms} - {own} - {year_of_building} - {available} - {rent} - {floor} - {heating} - {car_park},
+            {market} - {advertiser_add} - {state_of_the_building_finish} - {city} - {province} - {district} - {street} -
+            {type_of_building}, {kind_of_investment}, {date_addition_add} - {date_actualisation_add}
+            {building_material} - {suplementary} - {remote_service} - {security} - {media} - {balcony} - {windows} - {
+                elevator} -
+            {equipment} - {nr_offert}  -{contact_person} - {contact_number} - {row.link}''')
 
-                flat = site.create_new_flat(kind_of_investment, city, area, price, rooms, own, year_of_building, available,
-                                            rent, floor, heating, car_park, market, advertiser_add,
-                                            state_of_the_building_finish, province, district, street, date_addition_add,
-                                            date_actualisation_add, type_of_building, building_material, suplementary,
-                                            remote_service, security, media, balcony, windows, elevator, equipment, roof,
-                                            access, leisure_house, numbers_of_floors, fence, neighborhood, attic, roofing,
-                                            parcel_area, location, contact_person, contact_number, url, nr_offert)
+            flat = site.create_new_flat(kind_of_investment, city, area, price, rooms, own, year_of_building, available,
+                                        rent, floor, heating, car_park, market, advertiser_add,
+                                        state_of_the_building_finish, province, district, street, date_addition_add,
+                                        date_actualisation_add, type_of_building, building_material, suplementary,
+                                        remote_service, security, media, balcony, windows, elevator, equipment, roof,
+                                        access, leisure_house, numbers_of_floors, fence, neighborhood, attic, roofing,
+                                        parcel_area, location, contact_person, contact_number, row.link, nr_offert)
 
-                print(flat)
-                try:
-                    session.add(flat)
-                    session.commit()
-                    print('Działa')
-                except TypeError:
-                    print('Nie dziala')
-                    continue
-                except IntegrityError:
-                    print("yyyyy")
-                    session.rollback()
+            print(flat)
+            try:
+                session.add(flat)
+                session.commit()
+                print('Działa')
+            except TypeError:
+                print('Nie dziala')
+                continue
+            except IntegrityError:
+                print("yyyyy")
+                session.rollback()
 # parse_main_page(1)
 parse_page(1)

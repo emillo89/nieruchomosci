@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
@@ -9,6 +10,7 @@ Base = declarative_base()
 class Flats(Base):
     __tablename__ = 'property'
     id = Column(Integer(), primary_key=True)
+    id_link = Column(Integer, ForeignKey('link.id'))
     kind_of_investment = Column(String(100), nullable=True)
     city = Column(String(100), nullable=False)
     area = Column(Float(), nullable=False)
@@ -54,20 +56,22 @@ class Flats(Base):
     contact_number = Column(String(100), nullable=True)
     link = Column(String(256), nullable=True)
     nr_offert = Column(String(256), nullable=True, unique=True)
+    parent = relationship('Links', back_populates='children')
 
 
-engine = create_engine('sqlite:///offert.db', echo=True)
-Base.metadata.create_all(bind=engine)
-Session = sessionmaker(bind=engine)
+# engine = create_engine('sqlite:///offert.db', echo=True)
+# Base.metadata.create_all(bind=engine)
+# Session = sessionmaker(bind=engine)
 
 
 class Links(Base):
     __tablename__ = 'link'
     id = Column(Integer(), primary_key=True)
-    link = Column(String(256), nullable=True, unique=True)
-    link_active = Column(String(256), nullable=True, default='active')
+    url = Column(String(256), nullable=True, unique=True)
+    active = Column(String(256), nullable=True, default=True)
+    children = relationship('Flats', back_populates='parent')
 
 
-engine = create_engine('sqlite:///link.db', echo=True)
+engine = create_engine('sqlite:///link2.db', echo=True)
 Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine)
