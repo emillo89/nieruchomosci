@@ -227,7 +227,7 @@ class WebScrapping(WebScrappingMainPage):
         return self.show_date(date_addition)
 
     def get_date_actualisation(self, soup: BeautifulSoup):
-        date_actualisation = soup.find('div', class_='css-zojvsz')
+        date_actualisation = soup.find('div', class_='css-wlnxoe')
         return self.show_date(date_actualisation)
 
     def create_new_flat(self, kind_of_investment, city, area, price, rooms, own, year_of_building, available, rent,
@@ -235,7 +235,7 @@ class WebScrapping(WebScrappingMainPage):
                         district, street, date_addition_add, date_actualisation_add, type_of_building,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
                         equipment, roof, access, leisure_house, numbers_of_floors, fence, neighborhood, attic, roofing,
-                        parcel_area, location, contact_person, contact_number, link, nr_offert) -> Flats:
+                        parcel_area, location, contact_person, contact_number, url, nr_offert) -> Flats:
 
         new_flat = Flats(
             kind_of_investment=kind_of_investment,
@@ -280,7 +280,7 @@ class WebScrapping(WebScrappingMainPage):
             location=location,
             contact_person=contact_person,
             contact_number=contact_number,
-            link=link,
+            url=url,
             nr_offert=nr_offert
         )
 

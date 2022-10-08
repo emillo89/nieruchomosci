@@ -10,10 +10,16 @@ class ReadData:
     def __init__(self, databasename: str) -> None:
         self.con = DatabaseConnect(databasename)
         self.df = None
+        self.url_active = None
 
     def query_connection(self) -> DataFrame:
         connection = self.con.connect_data()
         self.df = pd.read_sql_query('Select * FROM property', connection)
+        return self.df
+
+    def query_connection_url(self) -> DataFrame:
+        connection = self.con.connect_data()
+        self.df = pd.read_sql_query('Select * FROM link', connection)
         return self.df
 
     def convert_to_csv(self, file_name='flats') -> None:

@@ -54,7 +54,7 @@ class Flats(Base):
     location = Column(String(100), nullable=True)
     contact_person = Column(String(100), nullable=True)
     contact_number = Column(String(100), nullable=True)
-    link = Column(String(256), nullable=True)
+    url = Column(String(256), nullable=True)
     nr_offert = Column(String(256), nullable=True, unique=True)
     parent = relationship('Links', back_populates='children')
 
@@ -67,7 +67,7 @@ class Flats(Base):
 class Links(Base):
     __tablename__ = 'link'
     id = Column(Integer(), primary_key=True)
-    url = Column(String(256), nullable=True, unique=True)
+    url = Column(String(256), nullable=True)
     active = Column(String(256), nullable=True, default=True)
     children = relationship('Flats', back_populates='parent')
 
