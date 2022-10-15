@@ -120,8 +120,11 @@ class WebScrapping(WebScrappingMainPage):
 
     @staticmethod
     def take_all_details(dict: Dict) -> Dict:
+        print(f' Ok {dict}')
+        details = ()
         for key in DETAILS:
             try:
+                print(dict[key])
                 dict[key]
             except KeyError:
                 print('Tutaj blad?????')
@@ -132,15 +135,17 @@ class WebScrapping(WebScrappingMainPage):
                 # print(f"{details['Piętro']}")
                 try:
                     if dict[key].endswith('m²'):
+                        print(dict[key])
                         dict[key] = dict[key].split(' ')[0].replace(',', '.')
+                        print(dict[key])
                     if dict[key].endswith('zł'):
                         dict[key] = dict[key].replace(' ', '').split('zł')[0]
                     elif dict[key].endswith('EUR'):
                         dict[key] = None
                     elif dict[key].endswith('$'):
                         dict[key] = None
-                    else:
-                        dict[key] = None
+                    # else:
+                    #     dict[key] = None
                     if dict[key] == 'zapytaj':
                         dict[key] = None
                 except AttributeError:
@@ -158,9 +163,10 @@ class WebScrapping(WebScrappingMainPage):
                     dict['Piętro'] = None
                 except KeyError:
                     dict['Piętro'] = None
+            print(f'key= {dict[key]}')
                 # if details[key].endswith('Film'):
                 #     details[key] = None
-        print(dict)
+        print(f'?{dict}')
         return dict
 
     def __get_details(self, soup: BeautifulSoup) -> Dict:
@@ -230,7 +236,7 @@ class WebScrapping(WebScrappingMainPage):
         date_actualisation = soup.find('div', class_='css-wlnxoe')
         return self.show_date(date_actualisation)
 
-    def create_new_flat(self, kind_of_investment, city, area, price, rooms, own, year_of_building, available, rent,
+    def create_new_flat(self, link_id, kind_of_investment, city, area, price, rooms, own, year_of_building, available, rent,
                         floor, heating, car_park, market, advertiser_add, state_of_the_building_finish, province,
                         district, street, date_addition_add, date_actualisation_add, type_of_building,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
@@ -238,6 +244,7 @@ class WebScrapping(WebScrappingMainPage):
                         parcel_area, location, contact_person, contact_number, url, nr_offert) -> Flats:
 
         new_flat = Flats(
+            link_id=link_id,
             kind_of_investment=kind_of_investment,
             city=city,
             area=area,

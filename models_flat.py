@@ -9,8 +9,9 @@ Base = declarative_base()
 
 class Flats(Base):
     __tablename__ = 'property'
-    id = Column(Integer(), primary_key=True)
-    id_link = Column(Integer, ForeignKey('link.id'))
+    id = Column(Integer, primary_key=True)
+    link_id = Column(Integer, ForeignKey('link.id'))
+    parent = relationship('Links', back_populates='children')
     kind_of_investment = Column(String(100), nullable=True)
     city = Column(String(100), nullable=False)
     area = Column(Float(), nullable=False)
@@ -19,7 +20,7 @@ class Flats(Base):
     own = Column(String(100), nullable=True)
     year_of_building = Column(String(100), nullable=True)
     available = Column(String(100), nullable=True)
-    rent = Column(Integer, nullable=True)
+    rent = Column(Integer(), nullable=True)
     floor = Column(String(100), nullable=True)
     heating = Column(String(100), nullable=True)
     car_park = Column(String(100), nullable=True)
@@ -56,7 +57,7 @@ class Flats(Base):
     contact_number = Column(String(100), nullable=True)
     url = Column(String(256), nullable=True)
     nr_offert = Column(String(256), nullable=True, unique=True)
-    parent = relationship('Links', back_populates='children')
+
 
 
 # engine = create_engine('sqlite:///offert.db', echo=True)
@@ -66,12 +67,17 @@ class Flats(Base):
 
 class Links(Base):
     __tablename__ = 'link'
-    id = Column(Integer(), primary_key=True)
-    url = Column(String(256), nullable=True)
+    id = Column(Integer, primary_key=True)
+    url = Column(String(256), nullable=True, unique=True)
     active = Column(String(256), nullable=True, default=True)
     children = relationship('Flats', back_populates='parent')
 
 
-engine = create_engine('sqlite:///link2.db', echo=True)
+# class History(Base):
+#     __tablename__ = 'history'
+
+
+
+engine = create_engine('sqlite:///link3.db', echo=True)
 Base.metadata.create_all(bind=engine)
 Session = sessionmaker(bind=engine)
