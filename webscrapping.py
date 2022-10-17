@@ -241,7 +241,7 @@ class WebScrapping(WebScrappingMainPage):
                         district, street, date_addition_add, date_actualisation_add, type_of_building,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
                         equipment, roof, access, leisure_house, numbers_of_floors, fence, neighborhood, attic, roofing,
-                        parcel_area, location, contact_person, contact_number, url, nr_offert) -> Flats:
+                        parcel_area, location, contact_person, contact_number, url, nr_offert, flag) -> Flats:
 
         new_flat = Flats(
             link_id=link_id,
@@ -288,7 +288,8 @@ class WebScrapping(WebScrappingMainPage):
             contact_person=contact_person,
             contact_number=contact_number,
             url=url,
-            nr_offert=nr_offert
+            nr_offert=nr_offert,
+            flag=flag
         )
 
         return new_flat

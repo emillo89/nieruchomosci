@@ -56,7 +56,8 @@ class Flats(Base):
     contact_person = Column(String(100), nullable=True)
     contact_number = Column(String(100), nullable=True)
     url = Column(String(256), nullable=True)
-    nr_offert = Column(String(256), nullable=True, unique=True)
+    nr_offert = Column(String(256), nullable=True)
+    flag = Column(Integer(), default=1)
 
 
 

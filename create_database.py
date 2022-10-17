@@ -7,43 +7,43 @@ from typing import List, Optional
 from datetime import datetime
 from readDatabase import ReadData
 
-session = Session()
-
 
 def parse_main_page(page: int) -> None:
     web_page = WebScrappingMainPage()
     kind_building = ['dom', 'mieszkanie']
 
     for kind in kind_building:
-        url= f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distanceRadius=0&page={page}&limit=72
-                 &market=ALL&locations=%5Bcities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2Ccities
-                 _6-1004%2Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing'''
+        url = f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distanceRadius=0&page={page}&limit=
+                  72&market=ALL&locations=%5Bcities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2
+                  Ccities_6-1004%2Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing'''
         soup = web_page.get_page(url)
         pages = web_page.get_how_many_pages(soup)
 
         for page in range(1, pages):
-            soup = web_page.get_page(f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distanceRadius=0&page={page}&limit=72&market=ALL&locations=%5Bcities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2Ccities_6-1004%2Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing''')
+            soup = web_page.get_page(f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distance
+                                         Radius=0&page={page}&limit=72&market=ALL&locations=%5Bcities_6-190%2Ccities_
+                                         6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2Ccities_6-1004%2Ccities_6-40
+                                         %2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing''')
             web_page.get_links_with_main_page(soup)
 
 
-def check_link(check_url: str, price: float) -> Optional:
-    data = ReadData('link2.db')
-    df = data.query_connection_url()
+def check_link(url: str, price: str) -> bool:
+    session = Session()
+    price = float(price)
     try:
-        flat_id = df.index[df['url'] == check_url]
-    except IndexError:
+        flat_check = session.query(Flats).filter_by(url=url).first()
+    except AttributeError:
         return False
     else:
-        pass
 
-
-
-# def check_price(float_id: int, price: float) -> None:
-#     flat = Flats.query.get(check_url)
-#     if flat.price != price:
-#         flat.price = price
-#         flat.date_actualisation_add = datetime.utcnow().date()
-#     session.commit()
+        if flat_check.price != price:
+            flat_check.price = price
+            flat_check.date_actualisation_add = datetime.utcnow().date()
+            session.add(flat_check)
+            session.commit()
+            return True
+        else:
+            return False
 
 
 def parse_page(page: int):
@@ -64,20 +64,15 @@ def parse_page(page: int):
         else:
             print('3')
             price = site.get_price(soup)
-            if price == None:
+            if price is None or check_link(row.url, price) is True:
                 continue
-            # check_url = check_link(row.url, price)
-            # if check_url != False:
-            #     print(row.id)
-            #     check_price(check_url, price)
-            #     continue
 
             kind_of_investment, city, province, district, street = site.get_locations(soup)
             balcony, rent, roof, access, leisure_house, available, own, suplementary, numbers_of_floors, rooms,\
-            building_material, media, car_park, remote_service, fence, heating, windows, neighborhood, floor, attic,\
-            roofing, area, parcel_area, location, type_of_building, year_of_building, market,\
-            state_of_the_building_finish, advertiser_add, elevator, equipment, security = site.show_details(soup)
-            if city == None and own == None and area == None:
+                building_material, media, car_park, remote_service, fence, heating, windows, neighborhood, floor, \
+                attic, roofing, area, parcel_area, location, type_of_building, year_of_building, market, \
+                state_of_the_building_finish, advertiser_add, elevator, equipment, security = site.show_details(soup)
+            if city is None and own is None and area is None:
                 continue
 
             nr_offert = site.get_nr_offert(soup)
@@ -91,8 +86,8 @@ def parse_page(page: int):
                 elevator} -
             {equipment} - {nr_offert}  -{contact_person} - {contact_number} - {row.url}''')
 
-            flat = site.create_new_flat(row.id, kind_of_investment, city, area, price, rooms, own, year_of_building, available,
-                                        rent, floor, heating, car_park, market, advertiser_add,
+            flat = site.create_new_flat(row.id, kind_of_investment, city, area, price, rooms, own, year_of_building,
+                                        available, rent, floor, heating, car_park, market, advertiser_add,
                                         state_of_the_building_finish, province, district, street, date_addition_add,
                                         date_actualisation_add, type_of_building, building_material, suplementary,
                                         remote_service, security, media, balcony, windows, elevator, equipment, roof,
@@ -110,14 +105,12 @@ def parse_page(page: int):
             except IntegrityError:
                 print("yyyyy")
                 session.rollback()
-# parse_main_page(1)
+parse_main_page(1)
 # parse_page(1)
 
-all_links = session.query(Flats).all()
 
-# book = Links.query.filter_by(url="https://www.otodom.pl/pl/oferta/dom-ogrod-garaz-ochrona-prestizowe-osiedle-oporow-ID4h8cm").first()
-# print(book.id)
-for row in all_links[:1]:
-    print(row.url)
-    link = Flats.query.filter_by(url=row.url).first()
-
+# flat = check_link(url='https://www.otodom.pl/pl/oferta/dom-na-zagrodniczej-poznan-stare-winogrady-ID4ikvh', price=15)
+# if flat is False:
+#     print('ok')
+# else:
+#     print('ooo')
