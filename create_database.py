@@ -2,10 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from webscrapping import WebScrapping
 from webscrapping_main_page import WebScrappingMainPage
 from models_flat import Links, Session, Flats
-from sqlalchemy import update
-from typing import List, Optional
 from datetime import datetime
-from readDatabase import ReadData
 
 
 def parse_main_page(page: int) -> None:
@@ -13,37 +10,35 @@ def parse_main_page(page: int) -> None:
     kind_building = ['dom', 'mieszkanie']
 
     for kind in kind_building:
-        url = f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distanceRadius=0&page={page}&limit=
-                  72&market=ALL&locations=%5Bcities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2
-                  Ccities_6-1004%2Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing'''
+        url = f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distanceRadius=0&page={page}&limit=72&market=ALL&locations=%5Bcities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2Ccities_6-1004%2Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing'''
         soup = web_page.get_page(url)
         pages = web_page.get_how_many_pages(soup)
 
         for page in range(1, pages):
-            soup = web_page.get_page(f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distance
-                                         Radius=0&page={page}&limit=72&market=ALL&locations=%5Bcities_6-190%2Ccities_
-                                         6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2Ccities_6-1004%2Ccities_6-40
-                                         %2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing''')
+            soup = web_page.get_page(f'''https://www.otodom.pl/pl/oferty/sprzedaz/{kind}/wiele-lokalizacji?distanceRadius=0&page={page}&limit=72&market=ALL&locations=%5Bcities_6-190%2Ccities_6-204%2Ccities_6-26%2Ccities_6-38%2Ccities_6-39%2Ccities_6-1004%2Ccities_6-40%2Ccities_6-1%2Ccities_6-184%2Ccities_6-213%5D&viewType=listing''')
             web_page.get_links_with_main_page(soup)
 
 
-def check_link(url: str, price: str) -> bool:
+def check_link(url: str, price: str, site: WebScrapping) -> bool:
     session = Session()
     price = float(price)
     try:
         flat_check = session.query(Flats).filter_by(url=url).first()
+        print(f'W bazie {flat_check.price}')
     except AttributeError:
-        return False
+        return True
     else:
 
         if flat_check.price != price:
+            new_dim = site.create_scd(flat_check, flag=0)
             flat_check.price = price
             flat_check.date_actualisation_add = datetime.utcnow().date()
-            session.add(flat_check)
+            all_update = [flat_check, new_dim]
+            session.add_all(all_update)
             session.commit()
-            return True
-        else:
             return False
+        else:
+            return True
 
 
 def parse_page(page: int):
@@ -51,7 +46,7 @@ def parse_page(page: int):
     # with open('link_offert.txt', 'r+', encoding='UTF-8') as all_links:
     session = Session()
     all_links = session.query(Links).all()
-    # all_flats = session.query(Flats).all()
+    all_flats = session.query(Flats).all()
     for row in all_links:
         print(row.url)
 
@@ -64,7 +59,10 @@ def parse_page(page: int):
         else:
             print('3')
             price = site.get_price(soup)
-            if price is None or check_link(row.url, price) is True:
+            if price is None:
+                continue
+            print('y1', price)
+            if check_link(row.url, price, site) is False:
                 continue
 
             kind_of_investment, city, province, district, street = site.get_locations(soup)
@@ -105,12 +103,8 @@ def parse_page(page: int):
             except IntegrityError:
                 print("yyyyy")
                 session.rollback()
-parse_main_page(1)
-# parse_page(1)
 
 
-# flat = check_link(url='https://www.otodom.pl/pl/oferta/dom-na-zagrodniczej-poznan-stare-winogrady-ID4ikvh', price=15)
-# if flat is False:
-#     print('ok')
-# else:
-#     print('ooo')
+# parse_main_page(1)
+parse_page(1)
+

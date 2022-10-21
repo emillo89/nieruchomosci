@@ -241,7 +241,7 @@ class WebScrapping(WebScrappingMainPage):
                         district, street, date_addition_add, date_actualisation_add, type_of_building,
                         building_material, suplementary, remote_service, security, media, balcony, windows, elevator,
                         equipment, roof, access, leisure_house, numbers_of_floors, fence, neighborhood, attic, roofing,
-                        parcel_area, location, contact_person, contact_number, url, nr_offert, flag) -> Flats:
+                        parcel_area, location, contact_person, contact_number, url, nr_offert, flag=1) -> Flats:
 
         new_flat = Flats(
             link_id=link_id,
@@ -293,3 +293,55 @@ class WebScrapping(WebScrappingMainPage):
         )
 
         return new_flat
+
+    def create_scd(self, flat: object, flag=0) -> object:
+        flat_scd = LinksDim(
+            link_id=flat.link_id,
+            kind_of_investment=flat.kind_of_investment,
+            city=flat.city,
+            area=flat.area,
+            price=flat.price,
+            rooms=flat.rooms,
+            own=flat.own,
+            year_of_building=flat.year_of_building,
+            available=flat.available,
+            rent=flat.rent,
+            floor=flat.floor,
+            heating=flat.heating,
+            car_park=flat.car_park,
+            market=flat.market,
+            advertiser_add=flat.advertiser_add,
+            state_of_the_building_finish=flat.state_of_the_building_finish,
+            province=flat.province,
+            district=flat.district,
+            street=flat.street,
+            date_addition_add=flat.date_addition_add,
+            date_actualisation_add=flat.date_actualisation_add,
+            type_of_building=flat.type_of_building,
+            building_material=flat.building_material,
+            suplementary=flat.suplementary,
+            remote_service=flat.remote_service,
+            security=flat.security,
+            media=flat.media,
+            balcony=flat.balcony,
+            windows=flat.windows,
+            elevator=flat.elevator,
+            equipment=flat.equipment,
+            roof=flat.roof,
+            access=flat.access,
+            leisure_house=flat.leisure_house,
+            numbers_of_floors=flat.numbers_of_floors,
+            fence=flat.fence,
+            neighborhood=flat.neighborhood,
+            attic=flat.attic,
+            roofing=flat.roofing,
+            parcel_area=flat.parcel_area,
+            location=flat.location,
+            contact_person=flat.contact_person,
+            contact_number=flat.contact_number,
+            url=flat.url,
+            nr_offert=flat.nr_offert,
+            flag=flag
+        )
+
+        return flat_scd

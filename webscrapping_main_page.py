@@ -1,3 +1,5 @@
+from sqlite3 import IntegrityError
+
 from webscrapper import WebScrapper
 from bs4 import BeautifulSoup
 from models_flat import Session, Links
@@ -17,18 +19,25 @@ class WebScrappingMainPage(WebScrapper):
         return pages
 
     def get_links_with_main_page(self, soup: BeautifulSoup) -> None:
+        session = Session()
         url = []
         links = soup.find_all('a', class_='css-b2mfz3')
         for link in links:
             if link['href'].startswith('/'):
                 link = f"https://www.otodom.pl{link['href']}"
-                url_data = Links(
-                    url = link,
-                    active = True
-                )
-                url.append(url_data)
-                if link not in self.all_links:
+
+                flat_check = session.query(Links).filter_by(url=link).first()
+                if flat_check is None:
+                    url_data = Links(
+                        url = link,
+                        active = True
+                    )
+
+            # url.append(url_data)
+            # if link not in self.all_links:
+                    print('all')
                     self.all_links.append(url_data)
-        session = Session()
-        session.add_all(url)
-        session.commit()
+                    session.add(url_data)
+                    session.commit()
+        # session.add(url)
+        # session.commit()
